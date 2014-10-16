@@ -67,7 +67,7 @@ def plot(canvas,points,axis,title,mode):
             posy1 = interpolate(maxx["-y"],maxx["+y"],height-margin,margin,points[x][1])
             posx2 = interpolate(maxx["-x"],maxx["+x"],margin,width-margin,points[x-1][0])
             posy2 = interpolate(maxx["-y"],maxx["+y"],height-margin,margin,points[x-1][1])
-            canvas.create_line(posx1,posy1,posx2,posy2)
+            canvas.create_line(posx1,posy1,posx2,posy2,width=1.5)
 
     elif mode.lower() == "best fit":pass
         
