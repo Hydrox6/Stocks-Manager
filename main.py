@@ -1,5 +1,9 @@
 import urllib2
 
+class Stock:
+
+    def __init__(self,name,
+
 codes = ["ASBE","CAMB","COG","VRP","NG."]
 prices = {}
 
@@ -19,5 +23,3 @@ for x in codes:
         if y == 3:
             p = float(u[y].split(">")[-1].rstrip())
             prices[x] = p
-    
-    
