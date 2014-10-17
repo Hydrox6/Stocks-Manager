@@ -9,7 +9,6 @@ def interpolate(r1,r2,f1,f2,rd):
     r1 -= r1
     pr = float(rd)/float(r2-r1)
     pf = pr*(f2-f1)
-    print r1,r2,rd,pr,pf
     return f1 +pf
 
 
@@ -40,9 +39,7 @@ def plot(canvas,points,axis,title,mode):
     for x in range(0,26):
         #X Axis Markers
         rawx = maxx["-x"]+fourpx*x
-        print rawx
         posx = interpolate(maxx["-x"],maxx["+x"],margin,width-margin,rawx)
-        print posx
         if not rawx == 0:
             canvas.create_line(posx,xaxisy,posx,xaxisy+3,width=1.5)
             canvas.create_text(posx,xaxisy+10,text=str(rawx))
@@ -87,20 +84,22 @@ def plot(canvas,points,axis,title,mode):
         
         r = float(xy)/maths.sqrt(xx*xy)
         
-        x1 = maxx["-x"]
-        x2 = maxx["+x"]
-        y1 = r*x1 + (ay-ax*r)
-        y2 = r*x2 + (ay-ax*r)
-        canvas.create_line(x1,y1,x2,y2,width=1.5)
+        y1 = ppy*(r*maxx["-x"] + (ay-ax*r))
+        y2 = ppy*(r*maxx["+x"] + (ay-ax*r))
+        x1 = margin
+        x2 = width-margin
+        
+        canvas.create_line(x1,y2,x2,y1,width=1.5)
+        print x1,y1,x2,y2
             
         
 
 #test code         
 """
 root = Tk()
-point = [[-1,0],[1,2],[3,7],[6,2],[10,10]]
+point = [[-1,0],[1,2],[3,4],[6,7],[10,11]]
 c = Canvas(width=800,height=800)
 c.pack()
-Button(root,text="go",command=lambda:plot(c,point,["x","y"],"Thing","join")).pack()
+Button(root,text="go",command=lambda:plot(c,point,["x","y"],"Thing","best fit")).pack()
 root.mainloop()
 """
