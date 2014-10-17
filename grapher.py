@@ -69,7 +69,30 @@ def plot(canvas,points,axis,title,mode):
             posy2 = interpolate(maxx["-y"],maxx["+y"],height-margin,margin,points[x-1][1])
             canvas.create_line(posx1,posy1,posx2,posy2,width=1.5)
 
-    elif mode.lower() == "best fit":pass
+    elif mode.lower() == "best fit":
+        ax = 0.0
+        ay = 0.0
+        for p in points:
+            ax += p[0]
+            ay += p[1]
+        ax = ax/float(len(points))
+        ay = ay/float(len(points))
+        xy = 0
+        xx = 0
+        yy = 0
+        for p in points:
+            xy += (p[0]-ax)*(p[1]-ay)
+            xx += (p[0]-ax)*(p[0]-ax)
+            xy += (p[1]-ay)*(p[1]-ay)
+        
+        r = float(xy)/maths.sqrt(xx*xy)
+        
+        x1 = maxx["-x"]
+        x2 = maxx["+x"]
+        y1 = r*x1 + (ay-ax*r)
+        y2 = r*x2 + (ay-ax*r)
+        canvas.create_line(x1,y1,x2,y2,width=1.5)
+            
         
 
 #test code         
