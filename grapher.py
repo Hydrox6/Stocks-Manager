@@ -4,6 +4,9 @@ import math as maths
 
 
 def interpolate(r1,r2,f1,f2,rd):
+    """
+    Interpolates. Simple as.
+    """
     r2 -= r1
     rd -= r1
     r1 -= r1
@@ -11,8 +14,18 @@ def interpolate(r1,r2,f1,f2,rd):
     pf = pr*(f2-f1)
     return f1 +pf
 
+def plot(canvas,points,axes,title,mode):
+    """
+    Takes a Tkinter Canvas, a list of points, relevant titles, and a joining mode, and plots the graph complete with dynamic axes.
 
-def plot(canvas,points,axis,title,mode):
+    Keyword arguments:
+    
+    canvas = Tkinter.Canvas
+    points = List<List<float>> e.g. [[1.0,2.0],[2.0,3.0]]
+    axes = List<String> e.g. ["Distance","Time"]
+    title = String e.g. "Graph of Distance versus Time"
+    mode type = String, either "join" or "best fit"
+    """
     margin = 40
     height = canvas.winfo_height()
     width = canvas.winfo_width()
@@ -58,6 +71,13 @@ def plot(canvas,points,axis,title,mode):
         canvas.create_oval(posx+3,posy+2,posx+3,posy+2,width=1)#fixes corner pixel
         canvas.create_oval(posx+3,posy-3,posx+3,posy-3,width=1)#fixes corner pixel
 
+    if not len(axes) == 0:
+        canvas.create_text(yaxisx,margin-15,text=axes[0],font=("Calibri","12","bold"))
+        canvas.create_text(width/2,xaxisy+15,text=axes[1],font=("Calibri","12","bold"),anchor="n")
+
+
+    if not len(title) == 0: canvas.create_text(width/2,margin/2,text=title,font=("Calibri","14","bold","underline"))
+
     if mode.lower() == "join":
         for x in range(1,len(points)):
             posx1 = interpolate(maxx["-x"],maxx["+x"],margin,width-margin,points[x][0])
@@ -72,34 +92,28 @@ def plot(canvas,points,axis,title,mode):
         for p in points:
             ax += p[0]
             ay += p[1]
-        ax = ax/float(len(points))
-        ay = ay/float(len(points))
-        xy = 0
-        xx = 0
-        yy = 0
+        ax = ax/float(len(points))#average of x values
+        ay = ay/float(len(points))#average of y values
+        xy = 0.0
+        xx = 0.0
+        yy = 0.0
         for p in points:
             xy += (p[0]-ax)*(p[1]-ay)
-            xx += (p[0]-ax)*(p[0]-ax)
-            xy += (p[1]-ay)*(p[1]-ay)
+            xx += maths.pow((p[0]-ax),2)
+            yy += maths.pow((p[1]-ay),2)
         
-        r = float(xy)/maths.sqrt(xx*xy)
+        r = float(xy)/maths.sqrt(xx*yy)
+
+
+        x1 = maxx["-x"]
+        x2 = maxx["+x"]
+        y1 = height-ppy*(r*x1 + (ay-ax*r))
+        y2 = height-ppy*(r*x2 + (ay-ax*r))
+
+        x1 = (x1-maxx["-x"])*ppx
+        x2 = (x2-maxx["-x"])*ppx
+                
         
-        y1 = ppy*(r*maxx["-x"] + (ay-ax*r))
-        y2 = ppy*(r*maxx["+x"] + (ay-ax*r))
-        x1 = margin
-        x2 = width-margin
-        
-        canvas.create_line(x1,y2,x2,y1,width=1.5)
-        print x1,y1,x2,y2
+        canvas.create_line(x1,y1,x2,y2,width=1.5)
             
         
-
-#test code         
-"""
-root = Tk()
-point = [[-1,0],[1,2],[3,4],[6,7],[10,11]]
-c = Canvas(width=800,height=800)
-c.pack()
-Button(root,text="go",command=lambda:plot(c,point,["x","y"],"Thing","best fit")).pack()
-root.mainloop()
-"""
