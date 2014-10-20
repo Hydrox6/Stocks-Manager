@@ -29,8 +29,6 @@ def plot(canvas,points,axes,title,mode):
     margin = 40
     height = canvas.winfo_height()
     width = canvas.winfo_width()
-    draww = width-margin*2
-    drawh = height-margin*2
     maxx = {"+y":0.0,"-y":0.0,"+x":0.0,"-x":0.0}
     for x in points:
         if   x[0] < maxx["-x"]:maxx["-x"] = maths.floor(x[0])
@@ -39,10 +37,8 @@ def plot(canvas,points,axes,title,mode):
         elif x[1] > maxx["+y"]:maxx["+y"] = maths.ceil(x[1])
     rangex = maxx["+x"]-maxx["-x"]
     rangey = maxx["+y"]-maxx["-y"]
-    dpx = rangex/float(width)
-    dpy = rangey/float(height)
-    ppx = 1/dpx
-    ppy = 1/dpy
+    ppx = float(width)/rangex
+    ppy = float(height)/rangey
     fourpx = rangex/25
     fourpy = rangey/25
     xaxisy = height-margin-maxx["-y"]*ppy
@@ -115,5 +111,3 @@ def plot(canvas,points,axes,title,mode):
                 
         
         canvas.create_line(x1,y1,x2,y2,width=1.5)
-            
-        
