@@ -1,25 +1,59 @@
-import urllib2
+from Tkinter import *
 
-class Stock:
+root = Tk()
 
-    def __init__(self,name,
+def buildEntry(i):
+    d = data[i]
+    #build a horizontal row-like entry
+    #return entry
 
-codes = ["ASBE","CAMB","COG","VRP","NG."]
-prices = {}
+def mainscroll(e):
+    global top,ids
+    up = e.delta > 0
+    if up:
+        if not top == 0:
+            i = ids
+            for x in range(0,n):
+                ids[x].destroy()
+            top -= 1
+            i.insert(0,"")
+            for x in range(top,top+n):
+                e = buildEntry[x]
+                e.pack()
+                i[x-top] = l
+            ids = i
+    if not up:
+        if not top+n == len(data):
+            i = ids
+            for x in range(0,n):
+                ids[x].destroy()
+            top += 1
+            i.insert(-1,"")
+            for x in range(top,top+n):
+                e = buildEntry[x]
+                e.pack()
+                i[x-top] = l
+            ids = i
+                
+        
+
+main = Frame(root,height=800,width=800)
+main.pack()
+root.bind_all("<MouseWheel>",mainscroll)
+
+data = [str(x) for x in range(0,25)]
+ids = []
+
+n = 5
+top = 1
+
+for x in range(top,top+n):
+    l = Label(main,text=data[x])
+    ids.append(l)
+
+for x in range(0,n):
+    ids[x].pack()
+    
 
 
-base = "http://www.londonstockexchange.com/exchange/prices-and-markets/stocks/prices-search/stock-prices-search.html?nameCode={name}&page=1"
-for x in codes:
-    opener = urllib2.build_opener()
-    opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-    u = opener.open(base.format(name=x)).read()
-    u = u.split('class="table_dati"')[1].split("</table>")[0].split("<tbody>")[1].split("</tbody>")[0]
-    u = u.split("</td>")
-    for y in range(0,len(u)):
-        if y == 0:
-            t = u[y].split(">")[-1].rstrip()
-            if t != x:
-                break
-        if y == 3:
-            p = float(u[y].split(">")[-1].rstrip())
-            prices[x] = p
+root.mainloop()
