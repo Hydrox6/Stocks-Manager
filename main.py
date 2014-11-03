@@ -4,8 +4,10 @@ root = Tk()
 
 def buildEntry(i):
     d = data[i]
-    #build a horizontal row-like entry
-    #return entry
+    entry = PanedWindow(main,orient=HORIZONTAL)
+    for x in d:
+        Label(entry,text=x).pack(side=LEFT)
+    return entry
 
 def mainscroll(e):
     global top,ids
@@ -18,9 +20,9 @@ def mainscroll(e):
             top -= 1
             i.insert(0,"")
             for x in range(top,top+n):
-                e = buildEntry[x]
+                e = buildEntry(x)
                 e.pack()
-                i[x-top] = l
+                i[x-top] = e
             ids = i
     if not up:
         if not top+n == len(data):
@@ -30,9 +32,9 @@ def mainscroll(e):
             top += 1
             i.insert(-1,"")
             for x in range(top,top+n):
-                e = buildEntry[x]
+                e = buildEntry(x)
                 e.pack()
-                i[x-top] = l
+                i[x-top] = e
             ids = i
                 
         
@@ -41,15 +43,21 @@ main = Frame(root,height=800,width=800)
 main.pack()
 root.bind_all("<MouseWheel>",mainscroll)
 
-data = [str(x) for x in range(0,25)]
+data = []
+for x in range(0,25):
+    for y in range(0,25):
+        d = [str(x),str(y)]
+        data.append(d)
+
 ids = []
 
 n = 5
-top = 1
+top = 0
 
 for x in range(top,top+n):
-    l = Label(main,text=data[x])
-    ids.append(l)
+    e = buildEntry(x)
+    e.pack()
+    ids.append(e)
 
 for x in range(0,n):
     ids[x].pack()
