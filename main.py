@@ -11,19 +11,68 @@ root = Tk()
 root.geometry(str(w)+"x"+str(h))
 root.resizable(0,0)
 
+def redraw():
+    for x in main.children.values():
+        x.destroy()
+    for x in range(top,top+n):
+        e = buildEntry(x)
+        e.grid(column=0,row=x-top)
+
+def redrawScroll(up):
+    if up:
+        v = main.children.values()
+        for x in range(0,len(v)):
+            if x == 0:
+                v[x].destroy()
+            else:
+                v[x].grid(column=0,row=x-1)
+
 def fetch():
     print "blargh"
 
 def gen():
     print "blarghgen"
 
+def actuallyAdd(t,d):
+    t.destroy()
+    redraw()
+    
+
+def add():
+    top = Toplevel()
+    top.title("Add a share")
+
+    v1 = StringVar()
+    v2 = StringVar()
+    
+    
+    l1 = Label(top,text="Code")
+    l1.grid(row=0,column=0)
+    e1 = Entry(top,textvar=v1,width=30)
+    e1.grid(row=0,column=1)
+
+    l2 = Label(top,text="Amount")
+    l2.grid(row=1,column=0)
+    e2 = Entry(top,textvar=v2,width=30)
+    e2.grid(row=1,column=1)
+
+    b = Button(top,text="Add",command=lambda:actuallyAdd(top,[e1.get(),e2.get()]))
+    b.grid(row=256,column=0,columnspan=2)
+
+    
+
 font = ("lucida","14")
+
+def getSide(i):
+    print i
 
 def buildEntry(i):
     d = data[i]
     entry = PanedWindow(main,orient=HORIZONTAL)
     for x in d:
-        Label(entry,text=x,font=font,width=cw,relief="groove").pack(side=LEFT)
+        l=Label(entry,text=x,font=font,width=cw,relief="groove")
+        l.pack(side=LEFT)
+        l.bind("<Button-1>",lambda e: getSide(i))
     return entry
 
 def mainscroll(e):
@@ -53,8 +102,8 @@ def mainscroll(e):
                 e.pack()
                 i[x-top] = e
             ids = i
-                
-        
+
+
 
 mainr = Frame(root,height=800,width=800)
 mainr.grid(row=1,column=0)
@@ -105,6 +154,9 @@ get.pack(side=LEFT,anchor="nw")
 
 generate = Button(topbar,text="Generate Report",command=gen,height=2,width=17)
 generate.pack(side=LEFT,anchor="nw")
+
+addB = Button(topbar,text="Add Stock",command=add,height=2,width=11)
+addB.pack(side=LEFT,anchor="nw")
 
 
 
