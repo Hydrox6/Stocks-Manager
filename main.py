@@ -28,9 +28,11 @@ def redrawScroll(up):
                 v[x].grid(column=0,row=x-1)
 
 def fetch():
+    #TODO: stub
     print "blargh"
 
 def gen():
+    #TODO: stub
     print "blarghgen"
 
 def actuallyAdd(t,d):
@@ -64,6 +66,7 @@ def add():
 font = ("lucida","14")
 
 def getSide(i):
+    #TODO: stub
     print i
 
 def buildEntry(i):
