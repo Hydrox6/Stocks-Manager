@@ -18,14 +18,35 @@ def redraw():
         e = buildEntry(x)
         e.grid(column=0,row=x-top)
 
-def redrawScroll(up):
+def redrawScroll(e):
+    global top
+    up = e.delta > 0
     if up:
+        if not top == 0:
+            top -= 1
+            v = main.children.keys()
+            d = main.children
+            print d
+            for x in range(0,len(v)):
+                e = d[v[x]]
+                print d[v[x]].grid_info()["row"]
+                if x == 0:
+                    e.destroy()
+                else:
+                    e.grid(column=0,row=e.grid_info()["row"]-1)
+            e = buildEntry(top)
+            e.grid(column=0,row=0)
+    else:
+        if not top == 
+        top += 1
         v = main.children.values()
         for x in range(0,len(v)):
-            if x == 0:
+            if x == len(v)-1:
                 v[x].destroy()
             else:
-                v[x].grid(column=0,row=x-1)
+                v[x].grid(column=0,row=x+1)
+        e = buildEntry(top+n)
+        e.grid(column=0,row=n)
 
 def fetch():
     #TODO: stub
@@ -112,7 +133,7 @@ mainr = Frame(root,height=800,width=800)
 mainr.grid(row=1,column=0)
 main = Frame(mainr)
 main.grid(row=1,column=0)
-root.bind_all("<MouseWheel>",mainscroll)
+root.bind_all("<MouseWheel>",redrawScroll)
 
 maintop = Frame(mainr)
 maintop.grid(row=0,column=0)
