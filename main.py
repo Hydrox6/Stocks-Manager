@@ -18,35 +18,43 @@ def redraw():
         e = buildEntry(x)
         e.grid(column=0,row=x-top)
 
-def redrawScroll(e):
+def redrawScroll(ev):
     global top
-    up = e.delta > 0
+    up = ev.delta > 0
     if up:
         if not top == 0:
             top -= 1
             v = main.children.keys()
             d = main.children
-            print d
+            new = [None for x in range(0,n)]
             for x in range(0,len(v)):
                 e = d[v[x]]
-                print d[v[x]].grid_info()["row"]
-                if x == 0:
+                if e.grid_info()["row"] == str(len(v)-1):
                     e.destroy()
                 else:
-                    e.grid(column=0,row=e.grid_info()["row"]-1)
+                    new[int(e.grid_info()["row"])+1] = e
+            for x in range(1,len(new)):
+                e = new[x]
+                e.grid(column=0,row=x)
             e = buildEntry(top)
             e.grid(column=0,row=0)
     else:
-        if not top == 
-        top += 1
-        v = main.children.values()
-        for x in range(0,len(v)):
-            if x == len(v)-1:
-                v[x].destroy()
-            else:
-                v[x].grid(column=0,row=x+1)
-        e = buildEntry(top+n)
-        e.grid(column=0,row=n)
+        if not top == len(data)-1-n:
+            top += 1
+            v = main.children.keys()
+            d = main.children
+            new = [None for x in range(0,n)]
+            for x in range(0,len(v)):
+                e = d[v[x]]
+                if e.grid_info()["row"] == "0":
+                    e.destroy()
+                else:
+                    new[int(e.grid_info()["row"])-1] = e
+            for x in range(0,len(new)-1):
+                e = new[x]
+                e.grid(column=0,row=x)
+            e = buildEntry(top+n-1)
+            e.grid(column=0,row=n-1)
 
 def fetch():
     #TODO: stub
@@ -156,18 +164,14 @@ for x in range(0,25):
         d = [str(x),str(y),str(x+y),str(x*y),str(x-y)]
         data.append(d)
 
-ids = []
 
 n = 23
 top = 0
 
-for x in range(top,top+n):
-    e = buildEntry(x)
-    e.pack()
-    ids.append(e)
-
 for x in range(0,n):
-    ids[x].pack()
+    e = buildEntry(top+x)
+    e.grid(row=x,column=0)
+
     
 
 topbar = Frame(root)
