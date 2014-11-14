@@ -2,10 +2,12 @@ from Tkinter import *
 
 import math as maths
 
-w = 1366
+w = 800
 h = 768
 
-tw = 120
+tw = w/11#120
+fh = 27
+
 
 root = Tk()
 root.geometry(str(w)+"x"+str(h))
@@ -39,7 +41,7 @@ def redrawScroll(ev):
             e = buildEntry(top)
             e.grid(column=0,row=0)
     else:
-        if not top == len(data)-1-n:
+        if not top == len(data)-n:
             top += 1
             v = main.children.keys()
             d = main.children
@@ -65,7 +67,10 @@ def gen():
     print "blarghgen"
 
 def actuallyAdd(t,d):
+    global datad,data
     t.destroy()
+    datad[d[0].strip()] = d
+    data.append(d[0].strip())
     redraw()
     
 
@@ -86,7 +91,7 @@ def add():
     l2.grid(row=1,column=0)
     e2 = Entry(top,textvar=v2,width=30)
     e2.grid(row=1,column=1)
-
+    e1.focus_set()
     b = Button(top,text="Add",command=lambda:actuallyAdd(top,[e1.get(),e2.get()]))
     b.grid(row=256,column=0,columnspan=2)
 
@@ -99,7 +104,8 @@ def getSide(i):
     print i
 
 def buildEntry(i):
-    d = data[i]
+    d1 = data[i]
+    d = datad[d1]
     entry = PanedWindow(main,orient=HORIZONTAL)
     for x in d:
         l=Label(entry,text=x,font=font,width=cw,relief="groove")
@@ -137,11 +143,12 @@ def mainscroll(e):
 
 
 
-mainr = Frame(root,height=800,width=800)
+mainr = Frame(root)
 mainr.grid(row=1,column=0)
 main = Frame(mainr)
 main.grid(row=1,column=0)
 root.bind_all("<MouseWheel>",redrawScroll)
+
 
 maintop = Frame(mainr)
 maintop.grid(row=0,column=0)
@@ -149,30 +156,25 @@ maintop.grid(row=0,column=0)
 maintopf = Frame(maintop)
 maintopf.grid(row=0,column=0)
 
-columns = ["x","y","x+y","x*y","x-y"]
+columns = [["x","n"],["y","n"],["x+y","n"],["x*y","n"],["x-y","n"]]
 cw = tw/len(columns)
-for x in columns:
-    Label(maintopf,text=x,font=font,width=cw).pack(side=LEFT)
+
+def sortby(col):
+    #Do Quicksort or Mergesort, whichever I can understand
+    
+    redraw()
+
+cls = []
+
+for x in range(0,len(columns)):
+    t = columns[x][0]
+    l = Label(maintopf,text=t,font=font,width=cw)
+    l.pack(side=LEFT)
+    cls.append(l)
+    l.bind("<Button-1>",lambda e: sortby(x))
 
 c = Canvas(maintop,width=w,height=5,bg="#000000")
 c.grid(row=1,column=0)
-
-
-data = []
-for x in range(0,25):
-    for y in range(0,25):
-        d = [str(x),str(y),str(x+y),str(x*y),str(x-y)]
-        data.append(d)
-
-
-n = 23
-top = 0
-
-for x in range(0,n):
-    e = buildEntry(top+x)
-    e.grid(row=x,column=0)
-
-    
 
 topbar = Frame(root)
 topbar.grid(row=0,column=0,columnspan=2,sticky="nw")
@@ -185,6 +187,28 @@ generate.pack(side=LEFT,anchor="nw")
 
 addB = Button(topbar,text="Add Stock",command=add,height=2,width=11)
 addB.pack(side=LEFT,anchor="nw")
+
+
+data = []
+datad = {}
+for x in range(0,3):
+    for y in range(0,25):
+        d = [str(x),str(y),str(x+y),str(x*y),str(x-y)]
+        datad[str(x)+"."+str(y)] = d
+        data.append(str(x)+"."+str(y))
+
+
+root.update_idletasks()
+
+n = int(maths.floor((h-topbar.winfo_height()-25-fh)/float(fh+2)))#23
+top = 0
+
+for x in range(0,n):
+    e = buildEntry(top+x)
+    e.grid(row=x,column=0)
+    
+
+
 
 
 
