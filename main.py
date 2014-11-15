@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 from Tkinter import *
 
 import math as maths
 
-w = 800
-h = 768
+w = 1600
+h = 900
 
 tw = w/11#120
 fh = 27
@@ -14,8 +15,10 @@ root.geometry(str(w)+"x"+str(h))
 root.resizable(0,0)
 
 def redraw():
-    for x in main.children.values():
-        x.destroy()
+    try:
+        for x in main.children.values():
+            x.destroy()
+    except:pass
     for x in range(top,top+n):
         e = buildEntry(x)
         e.grid(column=0,row=x-top)
@@ -107,8 +110,8 @@ def buildEntry(i):
     d1 = data[i]
     d = datad[d1]
     entry = PanedWindow(main,orient=HORIZONTAL)
-    for x in d:
-        l=Label(entry,text=x,font=font,width=cw,relief="groove")
+    for x in columns:
+        l=Label(entry,text=d[x[0]],font=font,width=cw,relief="groove")
         l.pack(side=LEFT)
         l.bind("<Button-1>",lambda e: getSide(i))
     return entry
@@ -156,25 +159,81 @@ maintop.grid(row=0,column=0)
 maintopf = Frame(maintop)
 maintopf.grid(row=0,column=0)
 
-columns = [["x","n"],["y","n"],["x+y","n"],["x*y","n"],["x-y","n"]]
+columns = [["x","n"],["x*x","n"]]
+#      [col,asc] (int,boolean) 
+sort = [0,True]
 cw = tw/len(columns)
 
-def sortby(col):
-    #Do Quicksort or Mergesort, whichever I can understand
+def drawcol():
+    try:
+        for x in maintopf.children.values():
+            x.destroy()
+    except:pass
+    for x in range(0,len(columns)):
+        t = unicode(columns[x][0])
+        if x == sort[0]:
+            t += u"▲" if sort[1] else u"▼"
+        l = Label(maintopf,text=t,font=font,width=cw)
+        l.bind("<Button-1>",lambda e: sortby(x))
+        l.pack(side=LEFT)
+        
     
+
+def sortby(col):
+    print col
+    global sort, data
+    d = datad.values()
+    selector = columns[col][0]
+    if col == sort[0]:
+        asc = not sort[1]
+    else:
+        asc = True
+    
+    def swivel(l):
+        if len(l) <= 1: return l
+        else:
+            pivot = l[0]
+            l = l[1:]
+            high = []
+            low = []
+            for x in l:
+                if columns[col][1] == "n":
+                    if float(x[selector]) > float(pivot[selector]):
+                        high.append(x)
+                    else:
+                        low.append(x)
+                elif columns[col][1] == "a":
+                    for y in range(0,len(x)):
+                        if ord(x[selector][y]) > ord(pivot[selector][y]):
+                            high.append(x)
+                            break
+                        elif ord(x[selector][y]) < ord(pivot[selector][y]):
+                            low.append(x)
+                            break
+                    if not x in high and not x in low:
+                        low.append(x)
+                        
+            if not asc:low,high = high[::-1],low[::-1]
+            if len(high) <= 1 and len(low) <= 1:
+                return low + [pivot] + high
+            else:
+                return swivel(low)+[pivot]+swivel(high)
+
+    n = swivel(d)
+    nd = []
+    for x in n:
+        nd.append(x["x"])
+    data = nd
     redraw()
+    sort = [col,asc]
+    drawcol()
 
 cls = []
 
-for x in range(0,len(columns)):
-    t = columns[x][0]
-    l = Label(maintopf,text=t,font=font,width=cw)
-    l.pack(side=LEFT)
-    cls.append(l)
-    l.bind("<Button-1>",lambda e: sortby(x))
+drawcol()
 
 c = Canvas(maintop,width=w,height=5,bg="#000000")
-c.grid(row=1,column=0)
+c.grid(row=1,column=0,sticky="w")
 
 topbar = Frame(root)
 topbar.grid(row=0,column=0,columnspan=2,sticky="nw")
@@ -191,24 +250,25 @@ addB.pack(side=LEFT,anchor="nw")
 
 data = []
 datad = {}
-for x in range(0,3):
-    for y in range(0,25):
-        d = [str(x),str(y),str(x+y),str(x*y),str(x-y)]
-        datad[str(x)+"."+str(y)] = d
-        data.append(str(x)+"."+str(y))
+for x in range(0,100):
+    d1 = [str(x),str(x*x)]
+    d = {}
+    for z in range(0,len(d1)):
+        d[columns[z][0]] = d1[z]
+    datad[str(x)] = d
+    data.append(str(x))
 
 
 root.update_idletasks()
 
 n = int(maths.floor((h-topbar.winfo_height()-25-fh)/float(fh+2)))#23
 top = 0
-
+"""
 for x in range(0,n):
     e = buildEntry(top+x)
-    e.grid(row=x,column=0)
-    
-
-
+    e.grid(row=x,column=
+"""
+redraw()
 
 
 
