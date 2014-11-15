@@ -191,8 +191,7 @@ def sortby(col):
     def swivel(l):
         if len(l) <= 1: return l
         else:
-            pivot = l[0]
-            l = l[1:]
+            pivot = l.pop(0)
             high = []
             low = []
             for x in l:
