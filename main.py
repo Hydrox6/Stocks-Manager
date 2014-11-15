@@ -113,7 +113,7 @@ def buildEntry(i):
     for x in columns:
         l=Label(entry,text=d[x[0]],font=font,width=cw,relief="groove")
         l.pack(side=LEFT)
-        l.bind("<Button-1>",lambda e: getSide(i))
+        l.bind("<Button-1>",lambda e,i=i: getSide(i))
     return entry
 
 def mainscroll(e):
@@ -174,13 +174,12 @@ def drawcol():
         if x == sort[0]:
             t += u"▲" if sort[1] else u"▼"
         l = Label(maintopf,text=t,font=font,width=cw)
-        l.bind("<Button-1>",lambda e: sortby(x))
+        l.bind("<Button-1>",lambda e,x=x: sortby(x))
         l.pack(side=LEFT)
         
     
 
 def sortby(col):
-    print col
     global sort, data
     d = datad.values()
     selector = columns[col][0]
