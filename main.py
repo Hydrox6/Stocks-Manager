@@ -3,8 +3,10 @@ from Tkinter import *
 
 import math as maths
 
-w = 1600
-h = 900
+from get import get
+
+w = 1366
+h = 768
 
 tw = w/11#120
 fh = 27
@@ -62,8 +64,11 @@ def redrawScroll(ev):
             e.grid(column=0,row=n-1)
 
 def fetch():
-    #TODO: stub
-    print "blargh"
+    do = data[:]
+    for x in range(0,len(do)):
+        o = do[x]
+        data[x] = get(o[0])
+        
 
 def gen():
     #TODO: stub
