@@ -4,7 +4,7 @@ import urllib2
 codes = ["ASBE","CAMB","COG","VRP","NG."]
 #prices = {}
 
-signs = {"EUR":"€","GBP":"£","USD":"$"}
+signs = {"EUR":["€",True],"GBP":["£",True],"USD":["$",True]}
 
 bases = {"conv":"http://www.xe.com/currencyconverter/convert/?Amount={amount}&From={fom}&To={to}",
          "check":"http://www.londonstockexchange.com/exchange/prices-and-markets/stocks/prices-search/stock-prices-search.html?nameCode={name}&page=1"}
@@ -14,11 +14,16 @@ class Stock:
     #private String name
     #private String currency
     #private String price
+    #private String ocurrency
+    #private String oprice
+    #private temp boolean divb100
 
     def add(self,tag,data):
         if tag == "currency" and data == "GBX":
             setattr(self,"divb100",True)
+            setattr(self,"ocurrency",data)
         if tag == "price" and self.divb100:
+            setattr(self,"oprice",data)
             data = str(float(data)/100)
             del self.divb100
         setattr(self,tag,data)
@@ -32,6 +37,12 @@ class Stock:
         self.price = u
 
     def expand():return [self.code,self.name,signs[self.currency]+self.price]
+
+
+def getSigns():
+    u = opener.open().read()
+    u = u.split('class="sPg_tbl tablesorter"')[1].split("</table>")[0].split("</tr>")
+
 
 opener = urllib2.build_opener()
 opener.addheaders = [('User-agent', 'Mozilla/5.0')] #I'm not a robot, I promise *wink wink*
