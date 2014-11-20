@@ -4,7 +4,7 @@ import urllib2
 codes = ["ASBE","CAMB","COG","VRP","NG."]
 #prices = {}
 
-signs = {"EUR":["â‚¬",True],"GBP":["Â£",True],"USD":["$",True]}
+signs = {"EUR":[u"€",True],"GBP":[u"£",True],"USD":[u"$",True]}
 
 bases = {"conv":"http://www.xe.com/currencyconverter/convert/?Amount={amount}&From={fom}&To={to}",
          "check":"http://www.londonstockexchange.com/exchange/prices-and-markets/stocks/prices-search/stock-prices-search.html?nameCode={name}&page=1"}
@@ -27,7 +27,7 @@ class Stock:
             data = str(float(data)/100)
             del self.divb100
         setattr(self,tag,data)
-        
+
 
     def curconv(self,to):
         u = opener.open(bases["conv"].format(amount=self.price,fom=self.currency,to=to)).read()
@@ -40,13 +40,21 @@ class Stock:
 
 
 def getSigns():
-    u = opener.open().read()
-    u = u.split('class="sPg_tbl tablesorter"')[1].split("</table>")[0].split("</tr>")
+    u = opener.open("http://www.xe.com/iso4217.php").read()
+    u = u.split('class="sPg_tbl tablesorter"')[1].split("</table>")[0].split("<tbody>")[1].split("</tr>")
+    for x in u:
+        u2 = x.split('href="')[1].split('"')[0]
+        v = opener.open("http://www.xe.com"+u2).read()
+        v2 = v.split('class="currencystats"')[1].split('<div class="currencyprofile">')[0].split("</p>")[1].split("</strong>")[1].split("<strong>")[0].decode("utf-8")
+        print v2
+        raw_input()
+        
 
 
 opener = urllib2.build_opener()
 opener.addheaders = [('User-agent', 'Mozilla/5.0')] #I'm not a robot, I promise *wink wink*
         
+getSigns()
 
 tags = ["code","name","currency","price"]
 
