@@ -45,8 +45,11 @@ def getSigns():
     for x in u:
         u2 = x.split('href="')[1].split('"')[0]
         v = opener.open("http://www.xe.com"+u2).read()
-        v2 = v.split('class="currencystats"')[1].split('<div class="currencyprofile">')[0].split("</p>")[1].split("</strong>")[1].split("<strong>")[0].decode("utf-8")
-        print v2
+        sign = v.split('class="currencystats"')[1].split('<div class="currencyprofile">')[0].split("</p>")[1].split("</strong>")[1].split("<strong>")[0].decode("utf-8").strip()
+        before = v.split('class="currencyprofile"')[1].split('</div>')[1].split("Banknotes:")[1].split("Rarely Used:")[0].decode("utf-8")#.split(",")#)
+        print sign
+        print before
+        print before.split(",")[1]
         raw_input()
         
 
