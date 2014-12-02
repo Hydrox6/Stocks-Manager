@@ -1,292 +1,82 @@
-# -*- coding: utf-8 -*-
-from Tkinter import *
+# -*- coding: cp1252 -*-
+import urllib2
 
-import math as maths
+codes = ["ASBE","CAMB","COG","VRP","NG."]
+#prices = {}
 
-from get import get
+#signs = {"EUR":[u"€",True],"GBP":[u"£",True],"USD":[u"$",True]}
 
-w = 1366
-h = 768
+bases = {"conv":"http://www.xe.com/currencyconverter/convert/?Amount={amount}&From={fom}&To={to}",
+         "check":"http://www.londonstockexchange.com/exchange/prices-and-markets/stocks/prices-search/stock-prices-search.html?nameCode={name}&page=1"}
 
-tw = w/11#120
-fh = 27
+class Stock:
+    #private String code
+    #private String name
+    #private String currency
+    #private String price
+    #private String ocurrency
+    #private String oprice
+    #private temp boolean divb100
 
-
-root = Tk()
-root.geometry(str(w)+"x"+str(h))
-root.resizable(0,0)
-
-def redraw():
-    try:
-        for x in main.children.values():
-            x.destroy()
-    except:pass
-    for x in range(top,top+n):
-        e = buildEntry(x)
-        e.grid(column=0,row=x-top)
-
-def redrawScroll(ev):
-    global top
-    up = ev.delta > 0
-    if up:
-        if not top == 0:
-            top -= 1
-            v = main.children.keys()
-            d = main.children
-            new = [None for x in range(0,n)]
-            for x in range(0,len(v)):
-                e = d[v[x]]
-                if e.grid_info()["row"] == str(len(v)-1):
-                    e.destroy()
-                else:
-                    new[int(e.grid_info()["row"])+1] = e
-            for x in range(1,len(new)):
-                e = new[x]
-                e.grid(column=0,row=x)
-            e = buildEntry(top)
-            e.grid(column=0,row=0)
-    else:
-        if not top == len(data)-n:
-            top += 1
-            v = main.children.keys()
-            d = main.children
-            new = [None for x in range(0,n)]
-            for x in range(0,len(v)):
-                e = d[v[x]]
-                if e.grid_info()["row"] == "0":
-                    e.destroy()
-                else:
-                    new[int(e.grid_info()["row"])-1] = e
-            for x in range(0,len(new)-1):
-                e = new[x]
-                e.grid(column=0,row=x)
-            e = buildEntry(top+n-1)
-            e.grid(column=0,row=n-1)
-
-def fetch():
-    do = data[:]
-    for x in range(0,len(do)):
-        o = do[x]
-        data[x] = get(o[0])
-        
-
-def gen():
-    #TODO: stub
-    print "blarghgen"
-
-def actuallyAdd(t,d):
-    global datad,data
-    t.destroy()
-    datad[d[0].strip()] = d
-    data.append(d[0].strip())
-    redraw()
-    
-
-def add():
-    top = Toplevel()
-    top.title("Add a share")
-
-    v1 = StringVar()
-    v2 = StringVar()
-    
-    
-    l1 = Label(top,text="Code")
-    l1.grid(row=0,column=0)
-    e1 = Entry(top,textvar=v1,width=30)
-    e1.grid(row=0,column=1)
-
-    l2 = Label(top,text="Amount")
-    l2.grid(row=1,column=0)
-    e2 = Entry(top,textvar=v2,width=30)
-    e2.grid(row=1,column=1)
-    e1.focus_set()
-    b = Button(top,text="Add",command=lambda:actuallyAdd(top,[e1.get(),e2.get()]))
-    b.grid(row=256,column=0,columnspan=2)
-
-    
-
-font = ("lucida","14")
-
-def getSide(i):
-    #TODO: stub
-    print i
-
-def buildEntry(i):
-    d1 = data[i]
-    d = datad[d1]
-    entry = PanedWindow(main,orient=HORIZONTAL)
-    dre = re.compile("{(.*?)}")
-    for x in columns:
-        form = x[2]
-        final = ""
-        for x in dre.findall(x[3]):
-            final += x[3][:x[3].start()]
-            raw = x[3][x[3].start():x[3].end()][1:-1]
-            final += str(d[raw])
-        l=Label(entry,text=final,font=font,width=cw,relief="groove")
-        l.pack(side=LEFT)
-        l.bind("<Button-1>",lambda e,i=i: getSide(i))
-    return entry
-
-def mainscroll(e):
-    global top,ids
-    up = e.delta > 0
-    if up:
-        if not top == 0:
-            i = ids
-            for x in range(0,n):
-                ids[x].destroy()
-            top -= 1
-            i.insert(0,"")
-            for x in range(top,top+n):
-                e = buildEntry(x)
-                e.pack()
-                i[x-top] = e
-            ids = i
-    if not up:
-        if not top+n == len(data):
-            i = ids
-            for x in range(0,n):
-                ids[x].destroy()
-            top += 1
-            i.insert(-1,"")
-            for x in range(top,top+n):
-                e = buildEntry(x)
-                e.pack()
-                i[x-top] = e
-            ids = i
-
-
-
-mainr = Frame(root)
-mainr.grid(row=1,column=0)
-main = Frame(mainr)
-main.grid(row=1,column=0)
-root.bind_all("<MouseWheel>",redrawScroll)
-
-
-maintop = Frame(mainr)
-maintop.grid(row=0,column=0)
-
-maintopf = Frame(maintop)
-maintopf.grid(row=0,column=0)
-
-columns = [["x","n"],["x*x","n"]]
-columns = [["Code","a","{Code}"],["Price","n","{Price} {Code}"],["Amount","n","{Amount}"],["Total Price","n","{Total Price} {Code}"]]
-#      [col,asc] (int,boolean) 
-sort = [0,True]
-cw = tw/len(columns)
-
-def drawcol():
-    try:
-        for x in maintopf.children.values():
-            x.destroy()
-    except:pass
-    for x in range(0,len(columns)):
-        t = unicode(columns[x][0])
-        if x == sort[0]:
-            t += u"▲" if sort[1] else u"▼"
-        l = Label(maintopf,text=t,font=font,width=cw)
-        l.bind("<Button-1>",lambda e,x=x: sortby(x))
-        l.pack(side=LEFT)
-        
-    
-
-def sortby(col):
-    global sort, data
-    d = datad.values()
-    selector = columns[col][0]
-    if col == sort[0]:
-        asc = not sort[1]
-    else:
-        asc = True
-    
-    def swivel(l):
-        if len(l) <= 1: return l
+    def add(self,tag,data):
+        if tag == "currency" and data == "GBX":
+            setattr(self,"divb100",True)
+            setattr(self,"ocurrency",data)
+            setattr(self,"currency","GBP")
+        elif tag == "price" and self.divb100:
+            setattr(self,"oprice",data)
+            data = str(float(data)/100)
+            del self.divb100
+            setattr(self,tag,data)
         else:
-            pivot = l.pop(0)
-            high = []
-            low = []
-            for x in l:
-                if columns[col][1] == "n":
-                    if float(x[selector]) > float(pivot[selector]):
-                        high.append(x)
-                    else:
-                        low.append(x)
-                elif columns[col][1] == "a":
-                    for y in range(0,len(x)):
-                        if ord(x[selector][y]) > ord(pivot[selector][y]):
-                            high.append(x)
-                            break
-                        elif ord(x[selector][y]) < ord(pivot[selector][y]):
-                            low.append(x)
-                            break
-                    if not x in high and not x in low:
-                        low.append(x)
-                        
-            if not asc:low,high = high[::-1],low[::-1]
-            if len(high) <= 1 and len(low) <= 1:
-                return low + [pivot] + high
-            else:
-                return swivel(low)+[pivot]+swivel(high)
+            setattr(self,tag,data)
 
-    n = swivel(d)
-    nd = []
-    for x in n:
-        nd.append(x["x"])
-    data = nd
-    redraw()
-    sort = [col,asc]
-    drawcol()
 
-cls = []
+    def curconv(self,to):
+        u = opener.open(bases["conv"].format(amount=self.price,fom=self.currency,to=to)).read()
+        u = u.split('<tr class="uccRes">')[1].split("</tr>")[0].split("</td>")[2]
+        u = u.split(">")[1].split("&")[0]
+        self.currency = to
+        self.price = u
 
-drawcol()
+    def expand():return [self.code,self.name,self.currency+" "+self.price]
 
-c = Canvas(maintop,width=w,height=5,bg="#000000")
-c.grid(row=1,column=0,sticky="w")
+"""
+def getSigns():
+    u = opener.open("http://www.xe.com/iso4217.php").read()
+    u = u.split('class="sPg_tbl tablesorter"')[1].split("</table>")[0].split("<tbody>")[1].split("</tr>")
+    for x in u:
+        u2 = x.split('href="')[1].split('"')[0]
+        v = opener.open("http://www.xe.com"+u2).read()
+        sign = v.split('class="currencystats"')[1].split('<div class="currencyprofile">')[0].split("</p>")[1].split("</strong>")[1].split("<strong>")[0].decode("utf-8").strip()
+        before = v.split('class="currencyprofile"')[1].split('</div>')[1].split("Banknotes:")[1].split("Rarely Used:")[0].decode("utf-8")#.split(",")#)
+        print sign
+        print before
+        print before.split(",")
+        raw_input()
+"""
 
-topbar = Frame(root)
-topbar.grid(row=0,column=0,columnspan=2,sticky="nw")
-
-get = Button(topbar,text="Fetch Data",command=fetch,height=2,width=12)
-get.pack(side=LEFT,anchor="nw")
-
-generate = Button(topbar,text="Generate Report",command=gen,height=2,width=17)
-generate.pack(side=LEFT,anchor="nw")
-
-addB = Button(topbar,text="Add Stock",command=add,height=2,width=11)
-addB.pack(side=LEFT,anchor="nw")
-
-def init():
-    fl = open("store.csv","r")
-    r = fl.read().split("\n")
-    for x in r:
-        d = x.split(",")
+opener = urllib2.build_opener()
+opener.addheaders = [('User-agent', 'Mozilla/5.0')] #I'm not a robot, I promise *wink wink*
         
+#getSigns()
 
-data = []
-datad = {}
-for x in range(0,100):
-    d1 = [str(x),str(x*x)]
-    d = {}
-    for z in range(0,len(d1)):
-        d[columns[z][0]] = d1[z]
-    datad[str(x)] = d
-    data.append(str(x))
+tags = ["code","name","currency","price"]
 
-
-root.update_idletasks()
-
-n = int(maths.floor((h-topbar.winfo_height()-25-fh)/float(fh+2)))#23
-top = 0
-"""
-for x in range(0,n):
-    e = buildEntry(top+x)
-    e.grid(row=x,column=
-"""
-redraw()
-
-
-
-root.mainloop()
+def get(code):
+    u = opener.open(bases["check"].format(name=code)).read()
+    u = u.split('class="table_dati"')[1].split("</table>")[0].split("<tbody>")[1].split("</tbody>")[0]
+    u = u.split("</td>")
+    s = Stock()
+    for y in range(0,4):
+        if y == 1:
+            d = u[y].split(">")[-2][:-3].strip()
+        else:
+            d = u[y].split(">")[-1].rstrip()
+        if y == 0:
+            if d != code:
+                break
+        else:
+            s.add(tags[y],d)
+    
+    return s
