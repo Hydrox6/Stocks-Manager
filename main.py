@@ -115,8 +115,15 @@ def buildEntry(i):
     d1 = data[i]
     d = datad[d1]
     entry = PanedWindow(main,orient=HORIZONTAL)
+    dre = re.compile("{(.*?)}")
     for x in columns:
-        l=Label(entry,text=d[x[0]],font=font,width=cw,relief="groove")
+        form = x[2]
+        final = ""
+        for x in dre.findall(x[3]):
+            final += x[3][:x[3].start()]
+            raw = x[3][x[3].start():x[3].end()][1:-1]
+            final += str(d[raw])
+        l=Label(entry,text=final,font=font,width=cw,relief="groove")
         l.pack(side=LEFT)
         l.bind("<Button-1>",lambda e,i=i: getSide(i))
     return entry
@@ -165,6 +172,7 @@ maintopf = Frame(maintop)
 maintopf.grid(row=0,column=0)
 
 columns = [["x","n"],["x*x","n"]]
+columns = [["Code","a","{Code}"],["Price","n","{Price} {Code}"],["Amount","n","{Amount}"],["Total Price","n","{Total Price} {Code}"]]
 #      [col,asc] (int,boolean) 
 sort = [0,True]
 cw = tw/len(columns)
@@ -250,6 +258,12 @@ generate.pack(side=LEFT,anchor="nw")
 addB = Button(topbar,text="Add Stock",command=add,height=2,width=11)
 addB.pack(side=LEFT,anchor="nw")
 
+def init():
+    fl = open("store.csv","r")
+    r = fl.read().split("\n")
+    for x in r:
+        d = x.split(",")
+        
 
 data = []
 datad = {}
