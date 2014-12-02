@@ -171,7 +171,7 @@ maintop.grid(row=0,column=0)
 maintopf = Frame(maintop)
 maintopf.grid(row=0,column=0)
 
-columns = [["x","n"],["x*x","n"]]
+#columns = [["x","n"],["x*x","n"]]
 columns = [["Code","a","{Code}"],["Price","n","{Price} {Code}"],["Amount","n","{Amount}"],["Total Price","n","{Total Price} {Code}"]]
 #      [col,asc] (int,boolean) 
 sort = [0,True]
@@ -261,9 +261,15 @@ addB.pack(side=LEFT,anchor="nw")
 def init():
     fl = open("store.csv","r")
     r = fl.read().split("\n")
+    fl.close()
     for x in r:
         d = x.split(",")
-        
+        code = d[0]
+        dictt = {}
+        for y in range(0,len(d)):
+            dictt[columns[y*2][0]] = d[y]
+        extra = get(code)
+        datad[code] = dictt
 
 data = []
 datad = {}
