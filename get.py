@@ -10,20 +10,20 @@ bases = {"conv":"http://www.xe.com/currencyconverter/convert/?Amount={amount}&Fr
          "check":"http://www.londonstockexchange.com/exchange/prices-and-markets/stocks/prices-search/stock-prices-search.html?nameCode={name}&page=1"}
 
 class Stock:
-    #private String code
-    #private String name
-    #private String currency
-    #private String price
+    #private String Code
+    #private String Name
+    #private String Currency
+    #private String Price
     #private String ocurrency
     #private String oprice
     #private temp boolean divb100
 
     def add(self,tag,data):
-        if tag == "currency" and data == "GBX":
+        if tag == "Currency" and data == "GBX":
             setattr(self,"divb100",True)
             setattr(self,"ocurrency",data)
-            setattr(self,"currency","GBP")
-        elif tag == "price" and self.divb100:
+            setattr(self,"Currency","GBP")
+        elif tag == "Price" and self.divb100:
             setattr(self,"oprice",data)
             data = str(float(data)/100)
             del self.divb100
@@ -33,13 +33,29 @@ class Stock:
 
 
     def curconv(self,to):
+        old = self.price
+        ocur = self.currency
+        oto = to
+        ncur = to
+        if self.currency == "GBX":
+            old = float(old)/100
+            ocur = "GBP"
+        elif to == "GBX":
+            ncur = "GBP"
         u = opener.open(bases["conv"].format(amount=self.price,fom=self.currency,to=to)).read()
         u = u.split('<tr class="uccRes">')[1].split("</tr>")[0].split("</td>")[2]
         u = u.split(">")[1].split("&")[0]
+        if oto == "GBX":
+            to = "GBX"
+            u = str(float(u)*100)
         self.currency = to
         self.price = u
+        self.Currency = to
+        self.Price = u
 
-    def expand():return [self.code,self.name,self.currency+" "+self.price]
+    def expand(self):return [self.Code,self.Name,self.Currency+" "+self.Price]
+
+    def dictify(self):return {key:value for key, value in self.__dict__.items() if not key.startswith('__') and not callable(key)}
 
 """
 def getSigns():
@@ -61,7 +77,7 @@ opener.addheaders = [('User-agent', 'Mozilla/5.0')] #I'm not a robot, I promise 
         
 #getSigns()
 
-tags = ["code","name","currency","price"]
+tags = ["Code","Name","Currency","Price"]
 
 def get(code):
     u = opener.open(bases["check"].format(name=code)).read()
@@ -78,5 +94,5 @@ def get(code):
                 break
         else:
             s.add(tags[y],d)
-    
+    s.add("Code",code)
     return s
