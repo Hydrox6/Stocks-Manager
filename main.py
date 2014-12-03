@@ -5,6 +5,8 @@ import math as maths
 
 from get import get
 
+import os
+
 w = 1366
 h = 768
 
@@ -249,8 +251,8 @@ c.grid(row=1,column=0,sticky="w")
 topbar = Frame(root)
 topbar.grid(row=0,column=0,columnspan=2,sticky="nw")
 
-get = Button(topbar,text="Fetch Data",command=fetch,height=2,width=12)
-get.pack(side=LEFT,anchor="nw")
+getD = Button(topbar,text="Fetch Data",command=fetch,height=2,width=12)
+getD.pack(side=LEFT,anchor="nw")
 
 generate = Button(topbar,text="Generate Report",command=gen,height=2,width=17)
 generate.pack(side=LEFT,anchor="nw")
@@ -258,21 +260,30 @@ generate.pack(side=LEFT,anchor="nw")
 addB = Button(topbar,text="Add Stock",command=add,height=2,width=11)
 addB.pack(side=LEFT,anchor="nw")
 
-def init():
-    fl = open("store.csv","r")
-    r = fl.read().split("\n")
-    fl.close()
-    for x in r:
-        d = x.split(",")
-        code = d[0]
-        dictt = {}
-        for y in range(0,len(d)):
-            dictt[columns[y*2][0]] = d[y]
-        extra = get(code)
-        datad[code] = dictt
 
 data = []
 datad = {}
+
+
+def init():
+    if os.path.exists("store.csv"):
+        fl = open("store.csv","r")
+        r = fl.read().split("\n")
+        fl.close()
+        for x in r:
+            d = x.split(",")
+            code = d[0]
+            dictt = {}
+            for y in range(0,len(d)):
+                dictt[columns[y*2][0]] = d[y]
+            extra = get(code).dictify()
+            dictt.update(extra)
+            print dictt
+            #datad[code] = dictt
+
+init()
+raw_input()
+
 for x in range(0,100):
     d1 = [str(x),str(x*x)]
     d = {}
