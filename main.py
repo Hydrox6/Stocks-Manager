@@ -24,46 +24,48 @@ def redraw():
             x.destroy()
     except:pass
     for x in range(top,top+n):
-        e = buildEntry(x)
-        e.grid(column=0,row=x-top)
+        if not x >= len(data):
+            e = buildEntry(x)
+            e.grid(column=0,row=x-top)
 
 def redrawScroll(ev):
     global top
     up = ev.delta > 0
-    if up:
-        if not top == 0:
-            top -= 1
-            v = main.children.keys()
-            d = main.children
-            new = [None for x in range(0,n)]
-            for x in range(0,len(v)):
-                e = d[v[x]]
-                if e.grid_info()["row"] == str(len(v)-1):
-                    e.destroy()
-                else:
-                    new[int(e.grid_info()["row"])+1] = e
-            for x in range(1,len(new)):
-                e = new[x]
-                e.grid(column=0,row=x)
-            e = buildEntry(top)
-            e.grid(column=0,row=0)
-    else:
-        if not top == len(data)-n:
-            top += 1
-            v = main.children.keys()
-            d = main.children
-            new = [None for x in range(0,n)]
-            for x in range(0,len(v)):
-                e = d[v[x]]
-                if e.grid_info()["row"] == "0":
-                    e.destroy()
-                else:
-                    new[int(e.grid_info()["row"])-1] = e
-            for x in range(0,len(new)-1):
-                e = new[x]
-                e.grid(column=0,row=x)
-            e = buildEntry(top+n-1)
-            e.grid(column=0,row=n-1)
+    if len(data) > n:
+        if up:
+            if not top == 0:
+                top -= 1
+                v = main.children.keys()
+                d = main.children
+                new = [None for x in range(0,n)]
+                for x in range(0,len(v)):
+                    e = d[v[x]]
+                    if e.grid_info()["row"] == str(len(v)-1):
+                        e.destroy()
+                    else:
+                        new[int(e.grid_info()["row"])+1] = e
+                for x in range(1,len(new)):
+                    e = new[x]
+                    e.grid(column=0,row=x)
+                e = buildEntry(top)
+                e.grid(column=0,row=0)
+        else:
+            if not top == len(data)-n:
+                top += 1
+                v = main.children.keys()
+                d = main.children
+                new = [None for x in range(0,n)]
+                for x in range(0,len(v)):
+                    e = d[v[x]]
+                    if e.grid_info()["row"] == "0":
+                        e.destroy()
+                    else:
+                        new[int(e.grid_info()["row"])-1] = e
+                for x in range(0,len(new)-1):
+                    e = new[x]
+                    e.grid(column=0,row=x)
+                e = buildEntry(top+n-1)
+                e.grid(column=0,row=n-1)
 
 def fetch():
     do = data[:]
@@ -79,8 +81,14 @@ def gen():
 def actuallyAdd(t,d):
     global datad,data
     t.destroy()
-    datad[d[0].strip()] = d
-    data.append(d[0].strip())
+    nd = {}
+    nd["Code"] = d[0].strip().upper()
+    nd["Amount"] = d[1].strip()
+    extra = get(nd["Code"]).dictify()
+    nd["Total Price"] = float(extra["Price"])*float(nd["Amount"])
+    nd.update(extra)
+    datad[nd["Code"]] = nd
+    data.append(nd["Code"])
     redraw()
     
 
@@ -121,10 +129,15 @@ def buildEntry(i):
     for x in columns:
         form = x[2]
         final = ""
-        for x in dre.findall(x[3]):
-            final += x[3][:x[3].start()]
-            raw = x[3][x[3].start():x[3].end()][1:-1]
+        eform = form
+        while dre.match(eform) != None:
+            mat = dre.match(eform)
+            final += eform[:mat.start()]
+            raw = eform[mat.start():mat.end()][1:-1]
             final += str(d[raw])
+            print final
+            print eform
+            eform = eform[mat.end():]
         l=Label(entry,text=final,font=font,width=cw,relief="groove")
         l.pack(side=LEFT)
         l.bind("<Button-1>",lambda e,i=i: getSide(i))
@@ -174,7 +187,7 @@ maintopf = Frame(maintop)
 maintopf.grid(row=0,column=0)
 
 #columns = [["x","n"],["x*x","n"]]
-columns = [["Code","a","{Code}"],["Price","n","{Price} {Code}"],["Amount","n","{Amount}"],["Total Price","n","{Total Price} {Code}"]]
+columns = [["Code","a","{Code}"],["Price","n","{Price} {Currency}"],["Amount","n","{Amount}"],["Total Price","n","{Total Price} {Currency}"]]
 #      [col,asc] (int,boolean) 
 sort = [0,True]
 cw = tw/len(columns)
@@ -235,7 +248,7 @@ def sortby(col):
     n = swivel(d)
     nd = []
     for x in n:
-        nd.append(x["x"])
+        nd.append(x["Code"])
     data = nd
     redraw()
     sort = [col,asc]
@@ -265,6 +278,11 @@ data = []
 datad = {}
 
 
+root.update_idletasks()
+
+n = int(maths.floor((h-topbar.winfo_height()-25-fh)/float(fh+2)))#23
+top = 0
+
 def init():
     if os.path.exists("store.csv"):
         fl = open("store.csv","r")
@@ -278,12 +296,14 @@ def init():
                 dictt[columns[y*2][0]] = d[y]
             extra = get(code).dictify()
             dictt.update(extra)
-            print dictt
-            #datad[code] = dictt
+            dictt["Total Price"] = float(dictt["Price"])*float(dictt["Amount"])
+            datad[code] = dictt
+            data.append(code)
 
 init()
-raw_input()
 
+sortby(0)
+"""
 for x in range(0,100):
     d1 = [str(x),str(x*x)]
     d = {}
@@ -291,12 +311,9 @@ for x in range(0,100):
         d[columns[z][0]] = d1[z]
     datad[str(x)] = d
     data.append(str(x))
+"""
 
 
-root.update_idletasks()
-
-n = int(maths.floor((h-topbar.winfo_height()-25-fh)/float(fh+2)))#23
-top = 0
 """
 for x in range(0,n):
     e = buildEntry(top+x)
