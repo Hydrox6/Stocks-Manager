@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
+import mtTkinter as Tkinter
 from Tkinter import *
 
 import math as maths
 
 from get import get
 
-import os
+import os, threading, time
 
 w = 1366
 h = 768
@@ -70,8 +71,13 @@ def redrawScroll(ev):
 def fetch():
     do = data[:]
     for x in range(0,len(do)):
-        o = do[x]
-        data[x] = get(o[0])
+        o = datad[do[x]]
+        extra = get(do[x]).dictify()
+        o["Total Price"] = float(extra["Price"])*float(o["Amount"])
+        o["Total Price"] = 12762.00
+        o.update(extra)
+        datad[do[x]] = o
+    redraw()
         
 
 def gen():
@@ -135,8 +141,6 @@ def buildEntry(i):
             final += eform[:mat.start()]
             raw = eform[mat.start():mat.end()][1:-1]
             final += str(d[raw])
-            print final
-            print eform
             eform = eform[mat.end():]
         l=Label(entry,text=final,font=font,width=cw,relief="groove")
         l.pack(side=LEFT)
@@ -274,6 +278,51 @@ addB = Button(topbar,text="Add Stock",command=add,height=2,width=11)
 addB.pack(side=LEFT,anchor="nw")
 
 
+auto = BooleanVar()
+auto.set(False)
+
+def save():
+    fl = open("store.csv","w")
+    for _,v in datad.iteritems():
+        f = v["Code"]+","+v["Amount"]+"\n"
+        fl.write(f)
+    fl.close()
+        
+
+def drawnone():
+    countdown.delete(ALL)
+    countdown.create_text((20,20),text="Auto")
+
+def drawthing(c):
+    countdown.delete(ALL)
+    cp = float(c)/1000.0
+    countdown.create_arc((5,5,35,35),start=90.0,extent=-cp*360.0,fill="#0080c0",outline="#0080c0",activefill="#40c0ff",activeoutline="#40c0ff")
+
+def autothread():
+    current = 1000
+    while True:
+        if auto.get() == 1:
+            current -= 1
+            print current
+            drawthing(current)
+            if current == 0:
+                current = 1000
+                fetch()
+                save()
+        else:
+            drawnone()
+            current = 1000 
+        time.sleep(0.1)
+
+countdown = Canvas(topbar,height=40,width=40)
+countdown.pack(side=RIGHT,anchor="ne")
+
+countdown.bind("<Button-1>", lambda e: auto.set(not auto.get()))
+
+at = threading.Thread(target=autothread)
+at.start()
+
+
 data = []
 datad = {}
 
@@ -286,7 +335,7 @@ top = 0
 def init():
     if os.path.exists("store.csv"):
         fl = open("store.csv","r")
-        r = fl.read().split("\n")
+        r = fl.read().split("\n")[:-1]
         fl.close()
         for x in r:
             d = x.split(",")
