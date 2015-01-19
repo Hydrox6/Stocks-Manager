@@ -128,24 +128,36 @@ def add():
 font = ("lucida","14")
 
 selected = -1
-currentf = None
+currentf = PanedWindow(root,orient=HORIZONTAL)
+
+def colourise(obj,sel):
+    if sel:
+        widgets = wdata[obj].winfo_children()
+        for w in widgets:
+            w.config(bg="#0000FF")
+        
+        
 
 def getSide(i):
     global selected,currentf
     if selected == i:
         selected = -1
         currentf.destroy()
-        currentf = None
+        currentf = PanedWindow(root,orient=HORIZONTAL)
     else:
         selected = i
         currentf.destroy()
-        currentf = Frame(topside)
+        currentf = PanedWindow(topside,orient=HORIZONTAL)
         currentf.pack()
         #EDIT
-        bEdit = Button(currentf,text="Edit Stock")#,command=lambda e:pass)
-        bEdit
+        bEdit = Button(currentf,text="Edit Stock",height=2)#,command=lambda e:pass)
+        currentf.add(bEdit)
         #CONVERT
+        bConvert = Button(currentf,text="Convert to Currency",height=2)
+        currentf.add(bConvert)
         #REMOVE
+        bDelete = Button(currentf,text="Remove Stock",height=2)
+        currentf.add(bDelete)
 
 def buildEntry(i):
     d1 = data[i]
@@ -165,6 +177,8 @@ def buildEntry(i):
         l=Label(entry,text=final,font=font,width=cw,relief="groove")
         l.pack(side=LEFT)
         l.bind("<Button-1>",lambda e,i=i: getSide(i))
+    try:wdata[i] = entry
+    except IndexError: wdata.append(entry)
     return entry
 
 def mainscroll(e):
@@ -347,7 +361,7 @@ countdown.bind("<Button-1>", lambda e: auto.set(not auto.get()))
 
 spacer = Canvas(topbar,height=40,width=400,bg="#000000")
 
-spacer.pack(side=RIGHT,anchor="ne")
+spacer.pack(side=LEFT,anchor="ne")
 
 topside = Frame(topbar)
 topside.pack()
@@ -365,6 +379,7 @@ root.wm_protocol("WM_DELETE_WINDOW",stopthepress)
 
 
 data = []
+wdata = []
 datad = {}
 
 
