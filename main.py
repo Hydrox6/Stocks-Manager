@@ -76,7 +76,7 @@ def fetch():
         extraraw = get(do[x])
         extra = extraraw.dictify()
         o["Total Price"] = float(extra["Price"])*float(o["Amount"])
-        if not cc = extra["Currency"]:
+        if not cc == extra["Currency"]:
             extraraw.curconv(cc)
             extra = extraraw.dictify()
         o.update(extra)
@@ -127,9 +127,25 @@ def add():
 
 font = ("lucida","14")
 
+selected = -1
+currentf = None
+
 def getSide(i):
-    #TODO: stub
-    print i
+    global selected,currentf
+    if selected == i:
+        selected = -1
+        currentf.destroy()
+        currentf = None
+    else:
+        selected = i
+        currentf.destroy()
+        currentf = Frame(topside)
+        currentf.pack()
+        #EDIT
+        bEdit = Button(currentf,text="Edit Stock")#,command=lambda e:pass)
+        bEdit
+        #CONVERT
+        #REMOVE
 
 def buildEntry(i):
     d1 = data[i]
@@ -306,9 +322,11 @@ def drawthing(c):
     countdown.create_arc((12,12,28,28),extent=359,start=0,fill="#aaaaaa",outline="#aaaaaa")
     countdown.create_rectangle((15,15,25,25),fill="#666666",outline="#666666",activefill="#777777",activeoutline="#777777")
 
+threadgo = True
+
 def autothread():
     current = 1000
-    while True:
+    while threadgo:
         if auto.get() == 1:
             current -= 1
             #print current
@@ -332,10 +350,18 @@ spacer = Canvas(topbar,height=40,width=400,bg="#000000")
 spacer.pack(side=RIGHT,anchor="ne")
 
 topside = Frame(topbar)
-topside.pack(
+topside.pack()
 
 at = threading.Thread(target=autothread)
 at.start()
+
+def stopthepress():
+    global threadgo
+    threadgo = False
+    time.sleep(0.5)
+    root.destroy()
+
+root.wm_protocol("WM_DELETE_WINDOW",stopthepress)
 
 
 data = []
