@@ -72,9 +72,13 @@ def fetch():
     do = data[:]
     for x in range(0,len(do)):
         o = datad[do[x]]
-        extra = get(do[x]).dictify()
+        cc = o["Currency"]
+        extraraw = get(do[x])
+        extra = extraraw.dictify()
         o["Total Price"] = float(extra["Price"])*float(o["Amount"])
-        o["Total Price"] = 12762.00
+        if not cc = extra["Currency"]:
+            extraraw.curconv(cc)
+            extra = extraraw.dictify()
         o.update(extra)
         datad[do[x]] = o
     redraw()
@@ -136,8 +140,8 @@ def buildEntry(i):
         form = x[2]
         final = ""
         eform = form
-        while dre.match(eform) != None:
-            mat = dre.match(eform)
+        while dre.search(eform) != None:
+            mat = dre.search(eform)
             final += eform[:mat.start()]
             raw = eform[mat.start():mat.end()][1:-1]
             final += str(d[raw])
@@ -293,17 +297,21 @@ def drawnone():
     countdown.delete(ALL)
     countdown.create_text((20,20),text="Auto")
 
+
+
 def drawthing(c):
     countdown.delete(ALL)
     cp = float(c)/1000.0
-    countdown.create_arc((5,5,35,35),start=90.0,extent=-cp*360.0,fill="#0080c0",outline="#0080c0",activefill="#40c0ff",activeoutline="#40c0ff")
+    countdown.create_arc((5,5,35,35),start=90.0,extent=-cp*360.0,fill="#0080c0",outline="#0080c0")
+    countdown.create_arc((12,12,28,28),extent=359,start=0,fill="#aaaaaa",outline="#aaaaaa")
+    countdown.create_rectangle((15,15,25,25),fill="#666666",outline="#666666",activefill="#777777",activeoutline="#777777")
 
 def autothread():
     current = 1000
     while True:
         if auto.get() == 1:
             current -= 1
-            print current
+            #print current
             drawthing(current)
             if current == 0:
                 current = 1000
@@ -315,9 +323,16 @@ def autothread():
         time.sleep(0.1)
 
 countdown = Canvas(topbar,height=40,width=40)
-countdown.pack(side=RIGHT,anchor="ne")
+countdown.pack(side=LEFT,anchor="ne")
 
 countdown.bind("<Button-1>", lambda e: auto.set(not auto.get()))
+
+spacer = Canvas(topbar,height=40,width=400,bg="#000000")
+
+spacer.pack(side=RIGHT,anchor="ne")
+
+topside = Frame(topbar)
+topside.pack(
 
 at = threading.Thread(target=autothread)
 at.start()
