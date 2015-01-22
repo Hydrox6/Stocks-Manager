@@ -6,7 +6,7 @@ import math as maths
 
 from get import get
 
-import os, threading, time
+import os, threading, time, uuid
 
 w = 1366
 h = 768
@@ -97,8 +97,12 @@ def actuallyAdd(t,d):
     extra = get(nd["Code"]).dictify()
     nd["Total Price"] = float(extra["Price"])*float(nd["Amount"])
     nd.update(extra)
-    datad[nd["Code"]] = nd
-    data.append(nd["Code"])
+    while True:
+        ucode = uuid.uuid4()
+        if not ucode in data:break
+    nd["uuid"] = ucode
+    datad[ucode] = nd
+    data.append(ucode)
     redraw()
     
 
@@ -131,12 +135,32 @@ selected = -1
 currentf = PanedWindow(root,orient=HORIZONTAL)
 
 def colourise(obj,sel):
-    if sel:
-        widgets = wdata[obj].winfo_children()
-        for w in widgets:
-            w.config(bg="#0000FF")
+    widgets = wdata[obj].winfo_children()
+    for w in widgets:
+        if sel:
+            w.config(bg="#55CCFF")
+        else:
+            w.config(bg="#FFFFFF")
         
-        
+
+
+def subEdit(top,ev):
+    new = ev.get()
+    top.destroy()
+    current = selected
+
+def editS():
+    top = Toplevel()
+    l = Label(top,text="Amount:")
+    l.grid(column=0,row=0)
+    ev = StringVar()
+    e = Entry(top,textvariable=ev)
+    e.grid(column=1,row=0)
+    e.focus_set()
+    b = Button(top,text="Submit",command=lambda top=top,ev=ev: subEdit(top,ev))
+    b.grid(column=0,row=1,columnspan=2)
+    b.bind("<Return>",lambda e,top=top,ev=ev: subEdit(top,ev))
+
 
 def getSide(i):
     global selected,currentf
@@ -144,13 +168,15 @@ def getSide(i):
         selected = -1
         currentf.destroy()
         currentf = PanedWindow(root,orient=HORIZONTAL)
+        colourise(i,False)
     else:
+        colourise(selected,False)
         selected = i
         currentf.destroy()
         currentf = PanedWindow(topside,orient=HORIZONTAL)
         currentf.pack()
         #EDIT
-        bEdit = Button(currentf,text="Edit Stock",height=2)#,command=lambda e:pass)
+        bEdit = Button(currentf,text="Edit Stock",height=2,command=editS)
         currentf.add(bEdit)
         #CONVERT
         bConvert = Button(currentf,text="Convert to Currency",height=2)
@@ -158,6 +184,8 @@ def getSide(i):
         #REMOVE
         bDelete = Button(currentf,text="Remove Stock",height=2)
         currentf.add(bDelete)
+        colourise(i,True)
+        
 
 def buildEntry(i):
     d1 = data[i]
@@ -212,7 +240,7 @@ def mainscroll(e):
 
 
 mainr = Frame(root)
-mainr.grid(row=1,column=0)
+mainr.grid(row=1,column=0,columnspan=2)
 main = Frame(mainr)
 main.grid(row=1,column=0)
 root.bind_all("<MouseWheel>",redrawScroll)
@@ -267,7 +295,8 @@ def sortby(col):
                     else:
                         low.append(x)
                 elif columns[col][1] == "a":
-                    for y in range(0,len(x)):
+                    shorter = x[selector] if len(x[selector]) < pivot[selector] else pivot[selector]
+                    for y in range(0,len(shorter)):                        
                         if ord(x[selector][y]) > ord(pivot[selector][y]):
                             high.append(x)
                             break
@@ -286,7 +315,7 @@ def sortby(col):
     n = swivel(d)
     nd = []
     for x in n:
-        nd.append(x["Code"])
+        nd.append(x["uuid"])
     data = nd
     redraw()
     sort = [col,asc]
@@ -300,7 +329,7 @@ c = Canvas(maintop,width=w,height=5,bg="#000000")
 c.grid(row=1,column=0,sticky="w")
 
 topbar = Frame(root)
-topbar.grid(row=0,column=0,columnspan=2,sticky="nw")
+topbar.grid(row=0,column=0,columnspan=1,sticky="nw")
 
 getD = Button(topbar,text="Fetch Data",command=fetch,height=2,width=12)
 getD.pack(side=LEFT,anchor="nw")
@@ -332,7 +361,7 @@ def drawnone():
 def drawthing(c):
     countdown.delete(ALL)
     cp = float(c)/1000.0
-    countdown.create_arc((5,5,35,35),start=90.0,extent=-cp*360.0,fill="#0080c0",outline="#0080c0")
+    countdown.create_arc((5,5,35,35),start=90.0,extent=-cp*360.0,fill="#33AADD",outline="#33AADD")#,fill="#0080c0",outline="#0080c0")
     countdown.create_arc((12,12,28,28),extent=359,start=0,fill="#aaaaaa",outline="#aaaaaa")
     countdown.create_rectangle((15,15,25,25),fill="#666666",outline="#666666",activefill="#777777",activeoutline="#777777")
 
@@ -359,12 +388,12 @@ countdown.pack(side=LEFT,anchor="ne")
 
 countdown.bind("<Button-1>", lambda e: auto.set(not auto.get()))
 
-spacer = Canvas(topbar,height=40,width=400,bg="#000000")
+spacer = Canvas(topbar,height=40,width=0,bg="#000000")
 
 spacer.pack(side=LEFT,anchor="ne")
 
-topside = Frame(topbar)
-topside.pack()
+topside = Frame(root)
+topside.grid(column=1,row=0,sticky="ne",padx=25)
 
 at = threading.Thread(target=autothread)
 at.start()
@@ -402,8 +431,12 @@ def init():
             extra = get(code).dictify()
             dictt.update(extra)
             dictt["Total Price"] = float(dictt["Price"])*float(dictt["Amount"])
-            datad[code] = dictt
-            data.append(code)
+            while True:
+                ucode = uuid.uuid4()
+                if not ucode in data:break
+            dictt["uuid"] = ucode
+            datad[ucode] = dictt
+            data.append(ucode)
 
 init()
 
