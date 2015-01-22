@@ -68,19 +68,23 @@ def redrawScroll(ev):
                 e = buildEntry(top+n-1)
                 e.grid(column=0,row=n-1)
 
+
+def fetchone(uuid):
+    o = datad[uuid]
+    cc = o["Currency"]
+    extraraw = get(o["Code"])
+    extra = extraraw.dictify()
+    o["Total Price"] = float(extra["Price"])*float(o["Amount"])
+    if not cc == extra["Currency"]:
+        extraraw.curconv(cc)
+        extra = extraraw.dictify()
+    o.update(extra)
+    datad[uuid] = o
+
 def fetch():
     do = data[:]
     for x in range(0,len(do)):
-        o = datad[do[x]]
-        cc = o["Currency"]
-        extraraw = get(do[x])
-        extra = extraraw.dictify()
-        o["Total Price"] = float(extra["Price"])*float(o["Amount"])
-        if not cc == extra["Currency"]:
-            extraraw.curconv(cc)
-            extra = extraraw.dictify()
-        o.update(extra)
-        datad[do[x]] = o
+        fetchone(do[x])
     redraw()
         
 
@@ -148,6 +152,17 @@ def subEdit(top,ev):
     new = ev.get()
     top.destroy()
     current = selected
+    uu = data[selected]
+    cud = datad[uu]
+    cuw = wdata[selected]
+    cud["Amount"] = new
+    fetchone(uu)
+    redraw()
+    c = selected
+    getSide(c)
+    getSide(c)
+    
+    
 
 def editS():
     top = Toplevel()
@@ -160,6 +175,19 @@ def editS():
     b = Button(top,text="Submit",command=lambda top=top,ev=ev: subEdit(top,ev))
     b.grid(column=0,row=1,columnspan=2)
     b.bind("<Return>",lambda e,top=top,ev=ev: subEdit(top,ev))
+
+
+def acrem(top):
+
+def remS():
+    top = Toplevel()
+    l = Label(top,text="Are you sure?")
+    l.grid(row=0,column=0,columnspan=2)
+    b1 = Button(top,text="Yes"command=lambda e,top=top: acrem(top))
+    b1.grid(row=1,column=0)
+    b2 = Button(top,text="No",command=top.destroy)
+    b2.grid(row=1,column=1)
+    b2.bind("<Return>",lambda e,top=top: top.destroy())
 
 
 def getSide(i):
