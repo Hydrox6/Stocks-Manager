@@ -18,6 +18,10 @@ class Stock:
     #private String oprice
     #private temp boolean divb100
 
+    def __init__(self,preload=None):
+        if not preload == None:
+            self.__dict__.update(preload)
+
     def add(self,tag,data):
         if tag == "Currency" and data == "GBX":
             setattr(self,"divb100",True)
@@ -33,18 +37,18 @@ class Stock:
 
 
     def curconv(self,to):
-        old = self.price
-        ocur = self.currency
+        old = self.Price
+        ocur = self.Currency
         oto = to
         ncur = to
-        if self.currency == "GBX":
+        if self.Currency == "GBX":
             old = float(old)/100
             ocur = "GBP"
         elif to == "GBX":
             ncur = "GBP"
-        u = opener.open(bases["conv"].format(amount=self.price,fom=self.currency,to=to)).read()
+        u = opener.open(bases["conv"].format(amount=self.Price,fom=self.Currency,to=to)).read()
         u = u.split('<tr class="uccRes">')[1].split("</tr>")[0].split("</td>")[2]
-        u = u.split(">")[1].split("&")[0]
+        u = "{0:.2f}".format(float(u.split(">")[1].split("&")[0]))
         if oto == "GBX":
             to = "GBX"
             u = str(float(u)*100)

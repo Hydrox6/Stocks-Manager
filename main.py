@@ -4,7 +4,7 @@ from Tkinter import *
 
 import math as maths
 
-from get import get
+from get import *
 
 import os, threading, time, uuid
 
@@ -18,6 +18,8 @@ fh = 27
 root = Tk()
 root.geometry(str(w)+"x"+str(h))
 root.resizable(0,0)
+
+root.title("Stocks Manager")
 
 def redraw():
     try:
@@ -148,23 +150,21 @@ def colourise(obj,sel):
         
 
 
-def subEdit(top,ev):
+def subEdit(top,ev,i):
     new = ev.get()
     top.destroy()
-    current = selected
-    uu = data[selected]
+    uu = data[i]
     cud = datad[uu]
-    cuw = wdata[selected]
     cud["Amount"] = new
     fetchone(uu)
     redraw()
-    c = selected
+    c = i
     getSide(c)
     getSide(c)
     
     
 
-def editS():
+def editS(i):
     top = Toplevel()
     l = Label(top,text="Amount:")
     l.grid(column=0,row=0)
@@ -172,22 +172,56 @@ def editS():
     e = Entry(top,textvariable=ev)
     e.grid(column=1,row=0)
     e.focus_set()
-    b = Button(top,text="Submit",command=lambda top=top,ev=ev: subEdit(top,ev))
+    b = Button(top,text="Submit",command=lambda top=top,ev=ev,i=i: subEdit(top,ev,i))
     b.grid(column=0,row=1,columnspan=2)
-    b.bind("<Return>",lambda e,top=top,ev=ev: subEdit(top,ev))
+    top.bind_all("<Return>",lambda e,top=top,ev=ev,i=i: subEdit(top,ev,i))
 
 
-def acrem(top):
+def acrem(top,i):
+    top.destroy()
+    uu = data[i]
+    del datad[uu]
+    getSide(i)
+    data.pop(i)
+    wdata.pop(i)
+    redraw()
 
-def remS():
+def remS(i):
     top = Toplevel()
-    l = Label(top,text="Are you sure?")
+    l = Label(top,text="Are you sure?",width=15,height=3)
     l.grid(row=0,column=0,columnspan=2)
-    b1 = Button(top,text="Yes"command=lambda e,top=top: acrem(top))
+    b1 = Button(top,text="Yes",width=15,height=3,command=lambda top=top,i=i: acrem(top,i))
     b1.grid(row=1,column=0)
-    b2 = Button(top,text="No",command=top.destroy)
+    b2 = Button(top,text="No",width=15,height=3,command=top.destroy)
     b2.grid(row=1,column=1)
-    b2.bind("<Return>",lambda e,top=top: top.destroy())
+    top.bind_all("<Return>",lambda e,top=top: top.destroy())
+
+def subConv(top,ev,i):
+    to = ev.get()
+    top.destroy()
+    uu = data[i]
+    cud = datad[uu]
+    h = Stock(cud)
+    h.curconv(to)
+    datad[uu] = h.dictify()
+    redraw()
+    c = i
+    getSide(c)
+    getSide(c)
+    
+
+def convS(i):
+    top = Toplevel()
+    l = Label(top,text="Convert to:\n(Codes only)",width=15,height=3)
+    l.grid(row=0,column=0)
+    ev = StringVar()
+    e = Entry(top,textvariable=ev)
+    e.grid(row=0,column=1)
+    e.focus_set()
+    b = Button(top,text="Convert",command=lambda top=top,ev=ev,i=i:subConv(top,ev,i))
+    b.grid(row=1,column=0,columnspan=2)
+    top.bind_all("<Return>",lambda e,top=top,ev=ev,i=i: subConv(top,ev,i))
+    
 
 
 def getSide(i):
@@ -203,14 +237,20 @@ def getSide(i):
         currentf.destroy()
         currentf = PanedWindow(topside,orient=HORIZONTAL)
         currentf.pack()
+        initprice = datad[data[i]]["initPrice"]
+        formatted = "Initial Price: {initp}\nNet Change: {ch}".format(initp=initprice,ch=float(datad[data[i]]["Total Price"])-float(initprice)*int(datad[data[i]]["Amount"]))
+        
+        infol1 = Label(currentf,text=formatted,height=2,relief=RIDGE)
+        currentf.add(infol1)
+        
         #EDIT
-        bEdit = Button(currentf,text="Edit Stock",height=2,command=editS)
+        bEdit = Button(currentf,text="Edit Stock",height=2,command=lambda i=i:editS(i))
         currentf.add(bEdit)
         #CONVERT
-        bConvert = Button(currentf,text="Convert to Currency",height=2)
+        bConvert = Button(currentf,text="Convert to Currency",height=2,command=lambda i=i:convS(i))
         currentf.add(bConvert)
         #REMOVE
-        bDelete = Button(currentf,text="Remove Stock",height=2)
+        bDelete = Button(currentf,text="Remove Stock",height=2,command=lambda i=i:remS(i))
         currentf.add(bDelete)
         colourise(i,True)
         
@@ -379,6 +419,28 @@ def save():
         fl.write(f)
     fl.close()
         
+"""
+def animate(io):
+    if io:
+        for x in range(0,16):
+            countdown.delete(ALL)
+            countdown.create_arc((20-x,20-x,20+x,20+x),start=90.0,extent=360.0,fill="#33AADD",outline="#33AADD")
+            if x-7 > 0:
+                countdown.create_arc((13-x,13-x,13+x,13+x),extent=359,start=0,fill="#aaaaaa",outline="#aaaaaa")
+            if x-10 > 0:
+                countdown.create_rectangle((10-x,10-x,10+x,10+x),fill="#666666",outline="#666666",activefill="#777777",activeoutline="#777777")
+    else:
+        for x in range(0,16):
+            countdown.delete(ALL)
+            countdown.create_arc((5,5,35,35),start=90.0,extent=360.0,fill="#33AADD",outline="#33AADD")
+            if x-s[1] > 0:
+                countdown.create_arc((12,12,28,28),extent=359,start=0,fill="#aaaaaa",outline="#aaaaaa")
+            if x-s[2] > 0:
+                countdown.create_rectangle((15,15,25,25),fill="#666666",outline="#666666",activefill="#777777",activeoutline="#777777")
+    auto.set(not auto.get())
+ """           
+    
+        
 
 def drawnone():
     countdown.delete(ALL)
@@ -454,8 +516,10 @@ def init():
             d = x.split(",")
             code = d[0]
             dictt = {}
-            for y in range(0,len(d)):
+            for y in range(0,2):
                 dictt[columns[y*2][0]] = d[y]
+            dictt["initPrice"] = d[2]
+            dictt["buydate"] = d[3]
             extra = get(code).dictify()
             dictt.update(extra)
             dictt["Total Price"] = float(dictt["Price"])*float(dictt["Amount"])
