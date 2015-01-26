@@ -97,19 +97,23 @@ def gen():
 def actuallyAdd(t,d):
     global datad,data
     t.destroy()
-    nd = {}
-    nd["Code"] = d[0].strip().upper()
-    nd["Amount"] = d[1].strip()
-    extra = get(nd["Code"]).dictify()
-    nd["Total Price"] = float(extra["Price"])*float(nd["Amount"])
-    nd.update(extra)
-    while True:
-        ucode = uuid.uuid4()
-        if not ucode in data:break
-    nd["uuid"] = ucode
-    datad[ucode] = nd
-    data.append(ucode)
-    redraw()
+    try: float(d[1])
+    except ValueError: pass
+    else:
+        nd = {}
+        nd["Code"] = d[0].strip().upper()
+        nd["Amount"] = d[1].strip()
+        extra = get(nd["Code"]).dictify()
+        nd["Total Price"] = float(extra["Price"])*float(nd["Amount"])
+        nd["initPrice"] = extra["Price"]
+        nd.update(extra)
+        while True:
+            ucode = uuid.uuid4()
+            if not ucode in data:break
+        nd["uuid"] = ucode
+        datad[ucode] = nd
+        data.append(ucode)
+        redraw()
     
 
 def add():
@@ -132,6 +136,7 @@ def add():
     e1.focus_set()
     b = Button(top,text="Add",command=lambda:actuallyAdd(top,[e1.get(),e2.get()]))
     b.grid(row=256,column=0,columnspan=2)
+    top.bind_all("<Return>",lambda e:actuallyAdd(top,[e1.get(),e2.get()]))
 
     
 
@@ -151,16 +156,19 @@ def colourise(obj,sel):
 
 
 def subEdit(top,ev,i):
-    new = ev.get()
+    new = ev.get().strip()
     top.destroy()
-    uu = data[i]
-    cud = datad[uu]
-    cud["Amount"] = new
-    fetchone(uu)
-    redraw()
-    c = i
-    getSide(c)
-    getSide(c)
+    try: float(new)
+    except ValueError: pass
+    else:
+        uu = data[i]
+        cud = datad[uu]
+        cud["Amount"] = new
+        fetchone(uu)
+        redraw()
+        c = i
+        getSide(c)
+        getSide(c)
     
     
 
@@ -197,7 +205,7 @@ def remS(i):
     top.bind_all("<Return>",lambda e,top=top: top.destroy())
 
 def subConv(top,ev,i):
-    to = ev.get()
+    to = ev.get().upper()
     top.destroy()
     uu = data[i]
     cud = datad[uu]
