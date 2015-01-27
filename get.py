@@ -37,21 +37,7 @@ class Stock:
 
 
     def curconv(self,to):
-        old = self.Price
-        ocur = self.Currency
-        oto = to
-        ncur = to
-        if self.Currency == "GBX":
-            old = float(old)/100
-            ocur = "GBP"
-        elif to == "GBX":
-            ncur = "GBP"
-        u = opener.open(bases["conv"].format(amount=self.Price,fom=self.Currency,to=to)).read()
-        u = u.split('<tr class="uccRes">')[1].split("</tr>")[0].split("</td>")[2]
-        u = "{0:.2f}".format(float(u.split(">")[1].split("&")[0]))
-        if oto == "GBX":
-            to = "GBX"
-            u = str(float(u)*100)
+        u = conv(self.Price,self.Currency,to)
         self.currency = to
         self.price = u
         self.Currency = to
@@ -60,6 +46,25 @@ class Stock:
     def expand(self):return [self.Code,self.Name,self.Currency+" "+self.Price]
 
     def dictify(self):return {key:value for key, value in self.__dict__.items() if not key.startswith('__') and not callable(key)}
+
+def conv(am,oc,to):
+    old = data
+    ocur = oc
+    oto = to
+    ncur = to
+    if ocur == "GBX":
+        old = float(old)/100
+        ocur = "GBP"
+    elif to == "GBX":
+        ncur = "GBP"
+    u = opener.open(bases["conv"].format(amount=am,fom=ocur,to=to)).read()
+    u = u.split('<tr class="uccRes">')[1].split("</tr>")[0].split("</td>")[2]
+    u = "{0:.2f}".format(float(u.split(">")[1].split("&")[0]))
+    if oto == "GBX":
+        to = "GBX"
+        u = str(float(u)*100)
+    return u
+    
 
 """
 def getSigns():

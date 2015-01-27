@@ -100,12 +100,16 @@ def actuallyAdd(t,d):
     try: float(d[1])
     except ValueError: pass
     else:
+        d[1] = int(d[1].strip())
         nd = {}
         nd["Code"] = d[0].strip().upper()
-        nd["Amount"] = d[1].strip()
+        nd["Amount"] = d[1]
         extra = get(nd["Code"]).dictify()
         nd["Total Price"] = float(extra["Price"])*float(nd["Amount"])
         nd["initPrice"] = extra["Price"]
+        nd["initCur"] = extra["Currency"]
+        date = time.gmtime()
+        nd["buydate"] = str(date[2])+"/"+str(date[1])+"/"+str(date[0])
         nd.update(extra)
         while True:
             ucode = uuid.uuid4()
@@ -113,6 +117,7 @@ def actuallyAdd(t,d):
         nd["uuid"] = ucode
         datad[ucode] = nd
         data.append(ucode)
+        save()
         redraw()
     
 
@@ -161,12 +166,14 @@ def subEdit(top,ev,i):
     try: float(new)
     except ValueError: pass
     else:
+        new = int(new)
         uu = data[i]
         cud = datad[uu]
         cud["Amount"] = new
         fetchone(uu)
         redraw()
         c = i
+        save()
         getSide(c)
         getSide(c)
     
@@ -192,6 +199,7 @@ def acrem(top,i):
     getSide(i)
     data.pop(i)
     wdata.pop(i)
+    save()
     redraw()
 
 def remS(i):
@@ -230,7 +238,9 @@ def convS(i):
     b.grid(row=1,column=0,columnspan=2)
     top.bind_all("<Return>",lambda e,top=top,ev=ev,i=i: subConv(top,ev,i))
     
+def Pass():pass
 
+root.bind_all("<Delete>",lambda e: Pass())
 
 def getSide(i):
     global selected,currentf
@@ -239,16 +249,22 @@ def getSide(i):
         currentf.destroy()
         currentf = PanedWindow(root,orient=HORIZONTAL)
         colourise(i,False)
+        root.bind_all("<Delete>",lambda e: Pass())
     else:
         colourise(selected,False)
         selected = i
         currentf.destroy()
         currentf = PanedWindow(topside,orient=HORIZONTAL)
         currentf.pack()
-        initprice = datad[data[i]]["initPrice"]
+        dat = datad[data[i]]
+        initprice = dat["initPrice"]
         formatted = "Initial Price: {initp}\nNet Change: {ch}".format(initp=initprice,ch=float(datad[data[i]]["Total Price"])-float(initprice)*int(datad[data[i]]["Amount"]))
         
-        infol1 = Label(currentf,text=formatted,height=2,relief=RIDGE)
+        infol1 = Label(currentf,text=formatted,height=2,relief=RIDGE,padx=5)
+        
+        infol2 = Label(currentf,text="Bought on: "+datad[data[i]]["buydate"],relief=RIDGE,height=2,padx=5)
+
+        currentf.add(infol2)
         currentf.add(infol1)
         
         #EDIT
@@ -260,6 +276,7 @@ def getSide(i):
         #REMOVE
         bDelete = Button(currentf,text="Remove Stock",height=2,command=lambda i=i:remS(i))
         currentf.add(bDelete)
+        root.bind_all("<Delete>",lambda e,i=i: remS(i))
         colourise(i,True)
         
 
@@ -423,7 +440,7 @@ auto.set(False)
 def save():
     fl = open("store.csv","w")
     for _,v in datad.iteritems():
-        f = v["Code"]+","+v["Amount"]+"\n"
+        f = v["Code"]+","+str(v["Amount"])+","+v["initPrice"]+","+v["buydate"]+"\n"
         fl.write(f)
     fl.close()
         
@@ -499,6 +516,7 @@ at.start()
 def stopthepress():
     global threadgo
     threadgo = False
+    save()
     time.sleep(0.5)
     root.destroy()
 
@@ -520,23 +538,28 @@ def init():
         fl = open("store.csv","r")
         r = fl.read().split("\n")[:-1]
         fl.close()
-        for x in r:
-            d = x.split(",")
-            code = d[0]
-            dictt = {}
-            for y in range(0,2):
-                dictt[columns[y*2][0]] = d[y]
-            dictt["initPrice"] = d[2]
-            dictt["buydate"] = d[3]
-            extra = get(code).dictify()
-            dictt.update(extra)
-            dictt["Total Price"] = float(dictt["Price"])*float(dictt["Amount"])
-            while True:
-                ucode = uuid.uuid4()
-                if not ucode in data:break
-            dictt["uuid"] = ucode
-            datad[ucode] = dictt
-            data.append(ucode)
+        try:
+            for x in r:
+                d = x.split(",")
+                code = d[0]
+                dictt = {}
+                for y in range(0,2):
+                    dictt[columns[y*2][0]] = d[y]
+                dictt["initPrice"] = d[2]
+                dictt["buydate"] = d[3]
+                extra = get(code).dictify()
+                dictt.update(extra)
+                dictt["Total Price"] = float(dictt["Price"])*float(dictt["Amount"])
+                while True:
+                    ucode = uuid.uuid4()
+                    if not ucode in data:break
+                dictt["uuid"] = ucode
+                datad[ucode] = dictt
+                data.append(ucode)
+        except:
+            top = Toplevel()
+            Label(top,text="The format of store.csv is incorrect.\nData could not be loaded").pack()
+            Button(top,text="Ok",command=top.destroy).pack()
 
 init()
 
