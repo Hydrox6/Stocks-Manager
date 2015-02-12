@@ -6,7 +6,7 @@ import math as maths
 
 from get import *
 
-import os, threading, time, uuid
+import os, time, uuid, threading
 
 w = 1366
 h = 768
@@ -511,6 +511,7 @@ topside = Frame(root)
 topside.grid(column=1,row=0,sticky="ne",padx=25)
 
 at = threading.Thread(target=autothread)
+at.daemon = True
 at.start()
 
 def stopthepress():
@@ -581,7 +582,5 @@ for x in range(0,n):
     e.grid(row=x,column=
 """
 redraw()
-
-
 
 root.mainloop()
