@@ -48,7 +48,7 @@ class Stock:
     def dictify(self):return {key:value for key, value in self.__dict__.items() if not key.startswith('__') and not callable(key)}
 
 def conv(am,oc,to):
-    old = data
+    old = am
     ocur = oc
     oto = to
     ncur = to

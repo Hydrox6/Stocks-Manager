@@ -91,8 +91,40 @@ def fetch():
         
 
 def gen():
-    #TODO: stub
-    print "blarghgen"
+    top = Toplevel()
+    top.title("Generate Report")
+    o1l = Label(top,text="Convert all prices to:\n(leave empty for no change)")
+    o1l.grid(row=0,column=0,sticky="e")
+    o1var = StringVar()
+    o1v = Entry(top,textvariable=o1var)
+    o1v.grid(row=0,column=1,sticky="w")
+    o2l = Label(top,text="Absolute Change values?")
+    o2l.grid(row=1,column=0,sticky="e")
+    o2var = IntVar()
+    o2v = Checkbutton(top,variable=o2var)
+    o2v.grid(row=1,column=1,sticky="w")
+    submit = Button(top,text="Generate",command=lambda top=top,v1=o1var,v2=o2var:genactual(top,{"convertto":v1.get(),"absolutechange":v2.get()==1}))
+    submit.grid(row=100,column=0,columnspan=2)
+
+def genactual(top,option):
+    options = option
+    top.destroy()
+    finalorder = []
+    data = {}
+    def buildline(d):
+        if options["convertto"] != "":
+            h = Stock(d)
+            h.curconv(options["convertto"])
+            d = h.dictify()
+            d["initPrice"] = conv(d["initPrice"],d["Currency"],options["convertto"])
+        if options["absolutechange"]:
+            change = (float(d["Total Price"])-float(d["initPrice"])*int(d["Amount"]))+" "+d["Currency"]
+        else:
+            change = str((float(d["Total Price"])/float(d["initPrice"])*int(d["Amount"]))*100)+"%"
+        ##datas = [code,initprice,price,amount,inittotalprice,totalprice,change,buydate]
+        datas = [d["code"],str(d["initPrice"])+" "+d["Currency"],str(d["Price"])+" "+d["Currency"],d["Amount"],float(d["initPrice"])*float(d["Amount"]),float(d["Price"])*float(d["Amount"]),change,d["buydate"]]
+        #d["uuid"]
+        
 
 def actuallyAdd(t,d):
     global datad,data
