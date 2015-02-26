@@ -103,7 +103,25 @@ def gen():
     o2var = IntVar()
     o2v = Checkbutton(top,variable=o2var)
     o2v.grid(row=1,column=1,sticky="w")
-    submit = Button(top,text="Generate",command=lambda top=top,v1=o1var,v2=o2var:genactual(top,{"convertto":v1.get(),"absolutechange":v2.get()==1}))
+    o3l = Label(top,text="Sort By:")
+    o3l.grid(row=2,column=0,columnspan=2)
+    o3f = Frame(top)
+    cvar = IntVar()
+    Radiobutton(o3f,text="Code",variable=cvar,value=0).grid(row=0,column=0)
+    Radiobutton(o3f,text="Initial Price",variable=cvar,value=1).grid(row=0,column=1)
+    Radiobutton(o3f,text="Current Price",variable=cvar,value=2).grid(row=0,column=2)
+    Radiobutton(o3f,text="Amount",variable=cvar,value=3).grid(row=0,column=3)
+    Radiobutton(o3f,text="Initial Total",variable=cvar,value=4).grid(row=1,column=0)
+    Radiobutton(o3f,text="Current Total",variable=cvar,value=5).grid(row=1,column=1)
+    Radiobutton(o3f,text="Price Change",variable=cvar,value=6).grid(row=1,column=2)
+    Radiobutton(o3f,text="Buy Date",variable=cvar,value=7).grid(row=1,column=3)
+    o3f.grid(row=3,column=0,columnspan=2)
+    o4v = IntVar()
+    o4v.set(1)
+    o4b = Checkbutton(top,text="Sort Ascending",variable=o4v)
+    o4b.grid(row=4,column=0,columnspan=2)
+    
+    submit = Button(top,text="Generate",command=lambda top=top,v1=o1var,v2=o2var:genactual(top,{"convertto":v1.get(),"absolutechange":v2.get()==1,"columnsort":cvar.get(),"sortasc":o4v.get()}))
     submit.grid(row=100,column=0,columnspan=2)
 
 def genactual(top,option):
@@ -111,7 +129,8 @@ def genactual(top,option):
     top.destroy()
     finalorder = []
     data = {}
-    def buildline(d):
+    def buildline(dat):
+        d = dat[1]
         if options["convertto"] != "":
             h = Stock(d)
             h.curconv(options["convertto"])
@@ -120,11 +139,58 @@ def genactual(top,option):
         if options["absolutechange"]:
             change = (float(d["Total Price"])-float(d["initPrice"])*int(d["Amount"]))+" "+d["Currency"]
         else:
-            change = str((float(d["Total Price"])/float(d["initPrice"])*int(d["Amount"]))*100)+"%"
+            tp = float(d["Total Price"])
+            ip = float(d["initPrice"])*int(d["Amount"])
+            change = tp/ip
+            change = change*100
+            change = str(change)+"%"
         ##datas = [code,initprice,price,amount,inittotalprice,totalprice,change,buydate]
-        datas = [d["code"],str(d["initPrice"])+" "+d["Currency"],str(d["Price"])+" "+d["Currency"],d["Amount"],float(d["initPrice"])*float(d["Amount"]),float(d["Price"])*float(d["Amount"]),change,d["buydate"]]
-        #d["uuid"]
-        
+        datas = [str(d["Code"]),str(d["initPrice"])+" "+d["Currency"],str(d["Price"])+" "+d["Currency"],str(d["Amount"]),str(float(d["initPrice"])*float(d["Amount"])),str(float(d["Price"])*float(d["Amount"])),str(change),str(d["buydate"])]
+        return datas
+
+    def qs(l):
+        if len(l) <= 1: return l
+        else:
+            pivot = l.pop(0)
+            high = []
+            low = []
+            for x in l:
+                d = x
+                try:
+                    if float(d[options["columnsort"]]) > float(pivot[options["columnsort"]]):
+                        high.append(x)
+                    else:
+                        low.append(x)
+                except ValueError:
+                    shorter = x if len(x[options["columnsort"]]) < len(pivot[options["columnsort"]]) else pivot
+                    for y in range(0,len(shorter)):                        
+                        if ord(x[options["columnsort"]][y]) > ord(pivot[options["columnsort"]][y]):
+                            high.append(x)
+                            break
+                        elif ord(x[options["columnsort"]][y]) < ord(pivot[options["columnsort"]][y]):
+                            low.append(x)
+                            break
+                    if not x in high and not x in low:
+                        low.append(x)
+                    
+            if not options["sortasc"]==1:
+                low,high = high[::-1],low[::-1]
+            if len(high) <= 1 and len(low) <= 1:
+                return low + [pivot] + high
+            else:
+                return qs(low)+[pivot]+qs(high)
+
+    for x in datad.iteritems():
+        finalorder.append(buildline(x))
+    
+    finalorder = qs(finalorder)
+
+    fl = open("generated.csv","w")
+    for x in finalorder:
+        fl.write(",".join(x)+"\n")
+    fl.close()
+
+    
 
 def actuallyAdd(t,d):
     global datad,data
