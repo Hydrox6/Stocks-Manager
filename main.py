@@ -8,6 +8,7 @@ from get import *
 
 import os, time, uuid, threading
 
+### Set Dimensions
 w = 1366
 h = 768
 
@@ -17,10 +18,12 @@ fh = 27
 
 root = Tk()
 root.geometry(str(w)+"x"+str(h))
-root.resizable(0,0)
+root.resizable(0,0) #
 
 root.title("Stocks Manager")
 
+
+### Redraws the window.
 def redraw():
     try:
         for x in main.children.values():
@@ -31,6 +34,8 @@ def redraw():
             e = buildEntry(x)
             e.grid(column=0,row=x-top)
 
+
+### Handles Scrolling
 def redrawScroll(ev):
     global top
     up = ev.delta > 0
@@ -70,7 +75,7 @@ def redrawScroll(ev):
                 e = buildEntry(top+n-1)
                 e.grid(column=0,row=n-1)
 
-
+### Fetches a single entry
 def fetchone(uuid):
     o = datad[uuid]
     cc = o["Currency"]
@@ -83,13 +88,15 @@ def fetchone(uuid):
     o.update(extra)
     datad[uuid] = o
 
+
+### Fetches all the entries
 def fetch():
     do = data[:]
     for x in range(0,len(do)):
         fetchone(do[x])
     redraw()
         
-
+### Generate Dialog
 def gen():
     top = Toplevel()
     top.title("Generate Report")
@@ -124,6 +131,8 @@ def gen():
     submit = Button(top,text="Generate",command=lambda top=top,v1=o1var,v2=o2var:genactual(top,{"convertto":v1.get(),"absolutechange":v2.get()==1,"columnsort":cvar.get(),"sortasc":o4v.get()}))
     submit.grid(row=100,column=0,columnspan=2)
 
+
+### Actually generates the report
 def genactual(top,option):
     options = option
     top.destroy()
@@ -191,7 +200,7 @@ def genactual(top,option):
     fl.close()
 
     
-
+### Actually adds an entry
 def actuallyAdd(t,d):
     global datad,data
     t.destroy()
@@ -218,7 +227,7 @@ def actuallyAdd(t,d):
         save()
         redraw()
     
-
+### Add Toplevel
 def add():
     top = Toplevel()
     top.title("Add a share")
